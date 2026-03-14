@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后天八卦方位：中土五行四季“体用虚实”全息推演</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&display=swap');
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #f5f3eb; /* 更加古朴的宣纸色 */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+            color: #2d3748;
+            overflow-x: hidden;
+        }
+
+        /* ----- 核心视觉隐喻系统 ----- */
+        .node-wrapper { transition: all 0.5s ease; }
+
+        /* 1. 外围光环 (用 - 功能/阳气) */
+        .node-yong {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* 2. 内部核心 (体 - 物质/阴血) */
+        .node-ti {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        /* ----- "用" (外环) 的动态状态 ----- */
+        .yong-wang { border: 4px dashed currentColor; transform: scale(1.6); opacity: 1; animation: spin-fast 3s linear infinite, glow-pulse 1.5s alternate infinite; }
+        .yong-xiang { border: 3px solid currentColor; border-style: double; transform: scale(1.2); opacity: 0.8; animation: spin-normal 8s linear infinite; }
+        .yong-xiu { border: 2px dashed currentColor; transform: scale(0.95); opacity: 0.5; animation: spin-slow 15s linear infinite; }
+        .yong-qiu { border: 2px dotted currentColor; transform: scale(0.8); opacity: 0.3; animation: spin-stutter 8s linear infinite; }
+        .yong-si { border: 1px solid currentColor; transform: scale(0.65); opacity: 0.1; }
+
+        /* ----- "体" (内芯) 的动态状态 ----- */
+        .ti-xu { transform: scale(0.6); opacity: 0.85; box-shadow: inset 0 0 15px rgba(0,0,0,0.4); }
+        .ti-chong { transform: scale(1.05); opacity: 1; box-shadow: 0 0 15px currentColor; }
+        .ti-zhi { transform: scale(0.85); filter: saturate(40%) brightness(70%); border: 3px solid #4a5568; }
+        .ti-shiyang { transform: scale(0.5); filter: grayscale(80%) opacity(60%); }
+        .ti-ping { transform: scale(0.9); opacity: 1; }
+
+        /* ----- 动画 ----- */
+        @keyframes spin-fast { 100% { transform: scale(1.6) rotate(360deg); } }
+        @keyframes spin-normal { 100% { transform: scale(1.2) rotate(360deg); } }
+        @keyframes spin-slow { 100% { transform: scale(0.95) rotate(360deg); } }
+        @keyframes spin-stutter { 
+            0%, 20% { transform: scale(0.8) rotate(0deg); } 
+            40%, 60% { transform: scale(0.8) rotate(90deg); }
+            80%, 100% { transform: scale(0.8) rotate(180deg); }
+        }
+        @keyframes glow-pulse {
+            0% { filter: drop-shadow(0 0 5px currentColor); }
+            100% { filter: drop-shadow(0 0 20px currentColor); }
+        }
+
+        /* 五行主题色 */
+        .theme-wood { color: #059669; } .bg-wood { background-color: #10B981; color: white;}
+        .theme-fire { color: #DC2626; } .bg-fire { background-color: #EF4444; color: white;}
+        .theme-earth { color: #D97706; } .bg-earth { background-color: #F59E0B; color: white;}
+        .theme-metal { color: #4B5563; } .bg-metal { background-color: #6B7280; color: white;}
+        .theme-water { color: #2563EB; } .bg-water { background-color: #3B82F6; color: white;}
+
+        /* 流动线设计 */
+        .line-sheng { stroke: #94a3b8; stroke-width: 2.5; stroke-dasharray: 6 6; animation: dash-flow 20s linear infinite; }
+        .line-ke { stroke: #fca5a5; stroke-width: 1.5; stroke-dasharray: 4 4; opacity: 0.6; animation: dash-flow-reverse 30s linear infinite; }
+        @keyframes dash-flow { to { stroke-dashoffset: -1000; } }
+        @keyframes dash-flow-reverse { to { stroke-dashoffset: 1000; } }
+
+        .season-btn.active { background-color: #451a03; color: #fef3c7; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(69, 26, 3, 0.3); border-color: #451a03; }
+        
+        .info-card { transition: all 0.3s ease; }
+        .info-card.wang-highlight { background-color: #fff1f2; border-color: #fecdd3; transform: scale(1.02); }
+        .info-card.si-highlight { background-color: #f3f4f6; border-color: #e5e7eb; filter: grayscale(10%); }
+    </style>
+</head>
+<body class="min-h-screen p-2 md:p-6 flex flex-col items-center">
+
+    <header class="text-center mb-6 w-full max-w-6xl">
+        <h1 class="text-3xl md:text-4xl font-black text-amber-900 mb-2 tracking-wide">中土五行·后天八卦全息推演</h1>
+        <div class="flex flex-wrap justify-center gap-4 text-xs md:text-sm font-bold text-gray-600 bg-amber-50/80 p-2 rounded-lg inline-flex border border-amber-200">
+            <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-gray-800"></span> 体(内圆) = 物质阴血</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 rounded-full border-2 border-dashed border-gray-800"></span> 用(外环) = 功能阳气</span>
+            <span class="ml-2 text-amber-800 hidden md:inline">中央生湿，湿生土，脾胃居中灌溉四旁</span>
+        </div>
+    </header>
+
+    <!-- 季节控制台 -->
+    <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 w-full z-20 relative" id="season-controls">
+        <button onclick="setSeason('spring')" id="btn-spring" class="season-btn px-5 py-2 rounded-lg border-2 border-green-600 text-green-700 font-bold transition-all hover:bg-green-50">春 (木生于东)</button>
+        <button onclick="setSeason('summer')" id="btn-summer" class="season-btn px-5 py-2 rounded-lg border-2 border-red-600 text-red-700 font-bold transition-all hover:bg-red-50">夏 (火盛于南)</button>
+        <button onclick="setSeason('lateSummer')" id="btn-lateSummer" class="season-btn px-5 py-2 rounded-lg border-2 border-yellow-600 text-yellow-700 font-bold transition-all hover:bg-yellow-50">长夏 (土旺中央)</button>
+        <button onclick="setSeason('autumn')" id="btn-autumn" class="season-btn px-5 py-2 rounded-lg border-2 border-gray-600 text-gray-700 font-bold transition-all hover:bg-gray-50">秋 (金收于西)</button>
+        <button onclick="setSeason('winter')" id="btn-winter" class="season-btn px-5 py-2 rounded-lg border-2 border-blue-600 text-blue-700 font-bold transition-all hover:bg-blue-50">冬 (水藏于北)</button>
+    </div>
+
+    <main class="w-full max-w-7xl flex flex-col lg:flex-row gap-6 items-start justify-center">
+        
+        <!-- 左侧：后天八卦方位动态阵法图 -->
+        <div class="w-full lg:w-[500px] flex justify-center items-center p-2 relative h-[500px]">
+            
+            <!-- 八卦背景底图指引 -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-10">
+                <div class="w-full h-full max-w-[460px] max-h-[460px] rounded-full border-[10px] border-amber-900 relative"></div>
+            </div>
+            
+            <div class="relative w-full h-full max-w-[460px] max-h-[460px]">
+                
+                <!-- SVG 曲线连线 (根据后天八卦新坐标计算的贝塞尔曲线) -->
+                <!-- 中心土(230,230), 南火(230,60), 北水(230,400), 东木(60,230), 西金(400,230) -->
+                <svg width="100%" height="100%" viewBox="0 0 460 460" class="absolute inset-0 z-0 drop-shadow-sm">
+                    <!-- 相生线 (顺时针流转)：木->火->土->金->水->木 -->
+                    <path d="M 60,230 Q 60,60 230,60 Q 190,145 230,230 Q 315,190 400,230 Q 400,400 230,400 Q 60,400 60,230" fill="none" class="line-sheng" />
+                    <!-- 相克线 (穿插制约)：木->土->水->火->金->木 -->
+                    <path d="M 60,230 Q 145,280 230,230 Q 280,315 230,400 Q 350,230 230,60 Q 315,145 400,230 Q 230,110 60,230" fill="none" class="line-ke" />
+                </svg>
+
+                <!-- 五方节点：依据后天八卦/洛书布局 -->
+
+                <!-- 南方 / 火 / 夏 -->
+                <div id="node-fire" class="node-wrapper absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10" style="left: 50%; top: 13%;">
+                    <div class="absolute -top-6 text-red-800/60 font-black tracking-widest text-sm">离南火</div>
+                    <div class="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+                        <div class="node-yong theme-fire inset-0 absolute"></div>
+                        <div class="node-ti bg-fire inset-2 absolute text-white font-black text-xl md:text-2xl border-2 border-white/30">心</div>
+                        <span class="state-badge absolute -top-1 -right-3 text-[10px] md:text-xs px-2 py-0.5 rounded shadow z-30 font-bold text-white"></span>
+                    </div>
+                    <div class="mt-4 md:mt-5 bg-white/90 backdrop-blur px-2 py-1 rounded shadow-sm border border-red-100 text-center w-28 text-xs z-20">
+                        <div class="text-gray-700">体：<span class="ti-text font-bold text-red-900"></span></div>
+                        <div class="text-gray-700">用：<span class="yong-text font-bold text-red-600"></span></div>
+                    </div>
+                </div>
+                
+                <!-- 北方 / 水 / 冬 -->
+                <div id="node-water" class="node-wrapper absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10" style="left: 50%; top: 87%;">
+                    <div class="absolute -bottom-6 text-blue-800/60 font-black tracking-widest text-sm">坎北水</div>
+                    <div class="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+                        <div class="node-yong theme-water inset-0 absolute"></div>
+                        <div class="node-ti bg-water inset-2 absolute text-white font-black text-xl md:text-2xl border-2 border-white/30">肾</div>
+                        <span class="state-badge absolute -top-1 -right-3 text-[10px] md:text-xs px-2 py-0.5 rounded shadow z-30 font-bold text-white"></span>
+                    </div>
+                    <div class="mt-4 md:mt-5 bg-white/90 backdrop-blur px-2 py-1 rounded shadow-sm border border-blue-100 text-center w-28 text-xs z-20">
+                        <div class="text-gray-700">体：<span class="ti-text font-bold text-blue-900"></span></div>
+                        <div class="text-gray-700">用：<span class="yong-text font-bold text-blue-600"></span></div>
+                    </div>
+                </div>
+
+                <!-- 东方 / 木 / 春 -->
+                <div id="node-wood" class="node-wrapper absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10" style="left: 13%; top: 50%;">
+                    <div class="absolute -left-10 text-green-800/60 font-black tracking-widest text-sm" style="writing-mode: vertical-lr;">震东木</div>
+                    <div class="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+                        <div class="node-yong theme-wood inset-0 absolute"></div>
+                        <div class="node-ti bg-wood inset-2 absolute text-white font-black text-xl md:text-2xl border-2 border-white/30">肝</div>
+                        <span class="state-badge absolute -top-1 -right-3 text-[10px] md:text-xs px-2 py-0.5 rounded shadow z-30 font-bold text-white"></span>
+                    </div>
+                    <div class="mt-4 md:mt-5 bg-white/90 backdrop-blur px-2 py-1 rounded shadow-sm border border-green-100 text-center w-28 text-xs z-20">
+                        <div class="text-gray-700">体：<span class="ti-text font-bold text-green-900"></span></div>
+                        <div class="text-gray-700">用：<span class="yong-text font-bold text-green-600"></span></div>
+                    </div>
+                </div>
+
+                <!-- 西方 / 金 / 秋 -->
+                <div id="node-metal" class="node-wrapper absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10" style="left: 87%; top: 50%;">
+                    <div class="absolute -right-10 text-gray-800/60 font-black tracking-widest text-sm" style="writing-mode: vertical-lr;">兑西金</div>
+                    <div class="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+                        <div class="node-yong theme-metal inset-0 absolute"></div>
+                        <div class="node-ti bg-metal inset-2 absolute text-white font-black text-xl md:text-2xl border-2 border-white/30">肺</div>
+                        <span class="state-badge absolute -top-1 -right-3 text-[10px] md:text-xs px-2 py-0.5 rounded shadow z-30 font-bold text-white"></span>
+                    </div>
+                    <div class="mt-4 md:mt-5 bg-white/90 backdrop-blur px-2 py-1 rounded shadow-sm border border-gray-200 text-center w-28 text-xs z-20">
+                        <div class="text-gray-700">体：<span class="ti-text font-bold text-gray-900"></span></div>
+                        <div class="text-gray-700">用：<span class="yong-text font-bold text-gray-600"></span></div>
+                    </div>
+                </div>
+
+                <!-- 中央 / 土 / 长夏 -->
+                <div id="node-earth" class="node-wrapper absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20" style="left: 50%; top: 50%;">
+                    <div class="absolute -top-7 text-amber-800/80 font-black tracking-widest text-sm bg-amber-100/50 px-2 rounded-full backdrop-blur-sm">中土戊己</div>
+                    <div class="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+                        <div class="node-yong theme-earth inset-0 absolute"></div>
+                        <div class="node-ti bg-earth inset-2 absolute text-white font-black text-xl md:text-2xl border-2 border-white/30 shadow-lg">脾</div>
+                        <span class="state-badge absolute -top-1 -right-3 text-[10px] md:text-xs px-2 py-0.5 rounded shadow z-30 font-bold text-white"></span>
+                    </div>
+                    <!-- 中央牌子略微下移防止遮挡太极线 -->
+                    <div class="mt-5 md:mt-6 bg-amber-50/95 backdrop-blur px-2 py-1 rounded shadow-md border border-amber-200 text-center w-28 text-xs z-30 font-bold">
+                        <div class="text-gray-700">体：<span class="ti-text text-amber-900"></span></div>
+                        <div class="text-gray-700">用：<span class="yong-text text-amber-600"></span></div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- 右侧：病机深度解析面板 -->
+        <div class="w-full lg:w-[calc(100%-520px)] flex flex-col gap-4 relative z-30">
+            
+            <div class="bg-gradient-to-r from-[#451a03] to-[#78350f] rounded-xl p-4 shadow-lg text-white flex justify-between items-center border-b-4 border-amber-600">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-bold mb-1" id="panel-season-title">选择节气开始推演</h2>
+                    <p class="text-amber-200 text-sm" id="panel-season-desc">观察中土系统下，四方脏腑的虚实转化</p>
+                </div>
+                <div class="text-4xl opacity-50 font-serif" id="panel-season-icon">☯</div>
+            </div>
+
+            <div id="panel-content" class="grid grid-cols-1 gap-3 overflow-y-auto max-h-[600px] pr-2 pb-10">
+                <div class="text-center text-amber-800 py-10 font-bold tracking-widest">中央生湿，湿生土...等待推演...</div>
+            </div>
+            
+        </div>
+    </main>
+
+    <script>
+        // 核心体用病机数据库
+        const matrixData = {
+            spring: {
+                title: '春季 (木令东方)', desc: '东方生风，风生木。木旺乘土。', icon: '震',
+                nodes: {
+                    wood:  { state: '旺', tiClass: 'ti-xu', yongClass: 'yong-wang', tiText: '暗耗易虚', yongText: '升发极盛', detailTitle: '东(肝) - 升发无制', detailDesc: '【用极旺，体易虚】木气当令。肝阳(用)狂暴升发，疯狂透支肝血(体)。此时核心内芯发虚，外围光环狂转。表现为过敏、面红目赤、心烦易怒。' },
+                    fire:  { state: '相', tiClass: 'ti-chong', yongClass: 'yong-xiang', tiText: '得母滋养', yongText: '生机渐盛', detailTitle: '南(心) - 木火相生', detailDesc: '【体充实，用渐盛】东方木气生南方火气，心血(体)得到母气滋养而充实，神明(用)活跃。' },
+                    earth: { state: '死', tiClass: 'ti-shiyang', yongClass: 'yong-si', tiText: '受克失养', yongText: '运化停摆', detailTitle: '中(脾) - 木旺乘土', detailDesc: '【体萎缩，用衰绝】东方肝木极旺，直克中央脾土。脾胃运化(用)停摆，实体(体)得不到精微滋养而虚弱。春季极易出现腹胀、不想吃饭。' },
+                    metal: { state: '囚', tiClass: 'ti-zhi', yongClass: 'yong-qiu', tiText: '气机郁滞', yongText: '肃降受阻', detailTitle: '西(肺) - 木火反侮', detailDesc: '【体郁滞，用受限】西方本应克制东方，但春季木气过盛反侮金气，肺气肃降之能被阻碍。' },
+                    water: { state: '休', tiClass: 'ti-xu', yongClass: 'yong-xiu', tiText: '生子耗竭', yongText: '功成退气', detailTitle: '北(肾) - 水不涵木', detailDesc: '【体亏耗，用退气】北方水生东方木。肾精大量消耗供给肝脏，自身内芯空虚，易发春困。' }
+                }
+            },
+            summer: {
+                title: '夏季 (火令南方)', desc: '南方生热，热生火。火旺盛长。', icon: '离',
+                nodes: {
+                    fire:  { state: '旺', tiClass: 'ti-xu', yongClass: 'yong-wang', tiText: '阴液暗耗', yongText: '神明极旺', detailTitle: '南(心) - 气盛伤阴', detailDesc: '【用极盛，体暗耗】南方火气当令。心阳(用)运转到极致。但大汗会迅速榨干心之阴血(体)，导致核心发虚，表现为心烦、失眠。' },
+                    earth: { state: '相', tiClass: 'ti-chong', yongClass: 'yong-xiang', tiText: '得温渐充', yongText: '运化健旺', detailTitle: '中(脾) - 火土相生', detailDesc: '【体渐充，用健旺】南方火温煦中央土，脾胃运化能力在初夏增强。' },
+                    metal: { state: '死', tiClass: 'ti-shiyang', yongClass: 'yong-si', tiText: '津液焦枯', yongText: '气散不收', detailTitle: '西(肺) - 火克金绝', detailDesc: '【体焦枯，用散失】受南方心火无情炙烤。肺阴(体)被烧干，气(用)彻底失去收敛能力，大汗淋漓。' },
+                    water: { state: '囚', tiClass: 'ti-zhi', yongClass: 'yong-qiu', tiText: '水受煎熬', yongText: '蛰伏受制', detailTitle: '北(肾) - 阳浮水枯', detailDesc: '【体受煎，用受制】阳气浮越，北方真水处于被火烤干的边缘，导致心肾不交。' },
+                    wood:  { state: '休', tiClass: 'ti-ping', yongClass: 'yong-xiu', tiText: '血耗需养', yongText: '生息退伏', detailTitle: '东(肝) - 功成身退', detailDesc: '【体需养，用退伏】春天生发耗尽能量，夏季转入休眠。易发生阴虚风动。' }
+                }
+            },
+            lateSummer: {
+                title: '长夏 (土令中央)', desc: '中央生湿，湿生土。灌溉四旁。', icon: '中',
+                nodes: {
+                    earth: { state: '旺', tiClass: 'ti-zhi', yongClass: 'yong-wang', tiText: '湿邪困阻', yongText: '超载运转', detailTitle: '中(脾) - 湿困中州', detailDesc: '【体受困，用超载】中央土气当令，湿邪极重。死死困住脾之实体(体变暗)。脾阳(用)被迫超负荷狂转以化湿，最终阳气耗尽变为脾虚泄泻。' },
+                    metal: { state: '相', tiClass: 'ti-chong', yongClass: 'yong-xiang', tiText: '气机充盈', yongText: '清肃渐起', detailTitle: '西(肺) - 土生金充', detailDesc: '【体气充，用渐起】中央土生西方金。但若脾虚生痰，则会变成“湿痰蒙肺”。' },
+                    water: { state: '死', tiClass: 'ti-zhi', yongClass: 'yong-si', tiText: '浊水停滞', yongText: '气化衰绝', detailTitle: '北(肾) - 土克水绝', detailDesc: '【体污浊，用衰绝】被中央厚重的湿土强力填压克制。北方肾阳(用)无法蒸腾，导致严重水肿及下焦湿热。' },
+                    wood:  { state: '囚', tiClass: 'ti-zhi', yongClass: 'yong-qiu', tiText: '气郁结滞', yongText: '疏泄受困', detailTitle: '东(肝) - 土壅木郁', detailDesc: '【体郁结，用受困】中央土气太旺反阻东方树木。肝气疏泄被湿土憋住，引发黄疸胁痛。' },
+                    fire:  { state: '休', tiClass: 'ti-xu', yongClass: 'yong-xiu', tiText: '气血外耗', yongText: '火势渐消', detailTitle: '南(心) - 母气消散', detailDesc: '【体气耗，用渐消】生中央土耗费心力。长夏天气闷热，易湿热蒙蔽心窍。' }
+                }
+            },
+            autumn: {
+                title: '秋季 (金令西方)', desc: '西方生燥，燥生金。肃杀内收。', icon: '兑',
+                nodes: {
+                    metal: { state: '旺', tiClass: 'ti-xu', yongClass: 'yong-wang', tiText: '秋燥伤阴', yongText: '降逆极强', detailTitle: '西(肺) - 用实耗体', detailDesc: '【用极强，体易燥】西方金气当令。肃降(用)如秋风扫落叶般强悍，但燥气极易抽干肺津(体)，表现为干咳无痰。' },
+                    water: { state: '相', tiClass: 'ti-chong', yongClass: 'yong-xiang', tiText: '精气封藏', yongText: '蓄势待发', detailTitle: '北(肾) - 金水相生', detailDesc: '【体精藏，用渐旺】得西方金相生，北方肾脏开始闭藏精气。' },
+                    wood:  { state: '死', tiClass: 'ti-zhi', yongClass: 'yong-si', tiText: '血脉瘀滞', yongText: '升发掐断', detailTitle: '东(肝) - 肃杀致瘀', detailDesc: '【体瘀滞，用极弱】遭西方金气无情砍伐。东方肝气升发之能(用)被彻底掐断，导致气不行血而瘀阻，引发秋悲脱发。' },
+                    fire:  { state: '囚', tiClass: 'ti-ping', yongClass: 'yong-qiu', tiText: '阳气敛降', yongText: '神明受限', detailTitle: '南(心) - 阳气内收', detailDesc: '【体阳收，用受限】南方火气被秋凉克制。心阳被迫内收，神明受限。' },
+                    earth: { state: '休', tiClass: 'ti-xu', yongClass: 'yong-xiu', tiText: '气虚转弱', yongText: '运化平缓', detailTitle: '中(脾) - 功成气退', detailDesc: '【体气虚，用转弱】生西方金耗能后，中央脾胃运转放缓。' }
+                }
+            },
+            winter: {
+                title: '冬季 (水令北方)', desc: '北方生寒，寒生水。万物蛰伏。', icon: '坎',
+                nodes: {
+                    water: { state: '旺', tiClass: 'ti-chong', yongClass: 'yong-wang', tiText: '阴寒极盛', yongText: '欲泄/潜藏', detailTitle: '北(肾) - 阴寒内盛', detailDesc: '【体极盛，用必藏】北方水气当令。精水(体)最为饱满，甚至阴寒极盛。肾阳(用)必须深深潜藏来温煦冰冷的水，一旦外泄即刻本虚致实，手足冰凉。' },
+                    wood:  { state: '相', tiClass: 'ti-chong', yongClass: 'yong-xiang', tiText: '暗蓄生机', yongText: '深处萌动', detailTitle: '东(肝) - 水生木孕', detailDesc: '【体蓄养，用萌动】北方水生东方木。树根(肝体)暗中蓄积来年春天的爆发力。' },
+                    fire:  { state: '死', tiClass: 'ti-zhi', yongClass: 'yong-si', tiText: '阳虚血凝', yongText: '推动衰绝', detailTitle: '南(心) - 水克火灭', detailDesc: '【体失温，用衰绝】遭受北方极寒致命打击。南方心脏推动力(用)降至冰点，血管(体)被冻结，易发心绞痛。' },
+                    earth: { state: '囚', tiClass: 'ti-zhi', yongClass: 'yong-qiu', tiText: '寒湿凝滞', yongText: '运化冻结', detailTitle: '中(脾) - 寒滞中焦', detailDesc: '【体寒凝，用受困】失去南方火的温煦，中央脾胃像被冻结的土地，运化停滞。' },
+                    metal: { state: '休', tiClass: 'ti-xu', yongClass: 'yong-xiu', tiText: '气机耗散', yongText: '肃降放缓', detailTitle: '西(肺) - 母虚气弱', detailDesc: '【体气耗，用放缓】生北方水耗气，肺气虚弱，肾不纳气，冬季必发咳喘。' }
+                }
+            }
+        };
+
+        const stateBadgeColors = {
+            '旺': 'bg-red-600 border border-red-800',
+            '相': 'bg-amber-500 border border-amber-700',
+            '休': 'bg-blue-500 border border-blue-700',
+            '囚': 'bg-gray-500 border border-gray-700',
+            '死': 'bg-gray-800 border border-black'
+        };
+
+        const organs = ['wood', 'fire', 'earth', 'metal', 'water'];
+
+        function setSeason(seasonKey) {
+            document.querySelectorAll('.season-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${seasonKey}`).classList.add('active');
+
+            const seasonData = matrixData[seasonKey];
+
+            document.getElementById('panel-season-title').innerText = seasonData.title;
+            document.getElementById('panel-season-desc').innerText = seasonData.desc;
+            document.getElementById('panel-season-icon').innerText = seasonData.icon;
+
+            const order = ['旺', '死', '相', '休', '囚'];
+            let panelHtml = '';
+
+            organs.forEach(organ => {
+                const node = document.getElementById(`node-${organ}`);
+                const data = seasonData.nodes[organ];
+                
+                const yongEl = node.querySelector('.node-yong');
+                yongEl.className = `node-yong theme-${organ} inset-0 absolute ${data.yongClass}`;
+                
+                const tiEl = node.querySelector('.node-ti');
+                tiEl.className = `node-ti bg-${organ} inset-2 absolute text-white font-black text-xl md:text-2xl border-2 border-white/30 shadow-lg ${data.tiClass}`;
+                
+                const badge = node.querySelector('.state-badge');
+                badge.innerText = data.state;
+                badge.className = `state-badge absolute -top-1 -right-3 text-[10px] md:text-xs px-2 py-0.5 rounded shadow z-40 font-bold text-white transition-colors ${stateBadgeColors[data.state]}`;
+                
+                node.querySelector('.ti-text').innerText = data.tiText;
+                node.querySelector('.yong-text').innerText = data.yongText;
+
+                data._organKey = organ;
+            });
+
+            order.forEach(targetState => {
+                const organKey = organs.find(o => seasonData.nodes[o].state === targetState);
+                if(!organKey) return;
+                
+                const data = seasonData.nodes[organKey];
+                
+                let cardClass = "info-card bg-white border border-amber-100 rounded-lg p-3 md:p-4 shadow hover:shadow-md";
+                if(data.state === '旺') cardClass += " wang-highlight border-l-4 border-l-red-500";
+                if(data.state === '死') cardClass += " si-highlight border-l-4 border-l-gray-700";
+
+                panelHtml += `
+                    <div class="${cardClass}">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 text-xs rounded text-white font-bold ${stateBadgeColors[data.state]} shadow-sm">${data.state}</span>
+                            <h3 class="font-bold text-base md:text-lg text-gray-800">${data.detailTitle}</h3>
+                        </div>
+                        
+                        <div class="flex gap-2 mb-2 text-xs md:text-sm">
+                            <div class="bg-gray-50 text-gray-700 px-2 py-1 rounded w-1/2 border border-gray-200 shadow-inner">
+                                <span class="font-bold">体(芯)：</span>${data.tiText}
+                            </div>
+                            <div class="bg-amber-50 text-amber-800 px-2 py-1 rounded w-1/2 border border-amber-200 shadow-inner">
+                                <span class="font-bold">用(环)：</span>${data.yongText}
+                            </div>
+                        </div>
+
+                        <p class="text-gray-700 text-xs md:text-sm leading-relaxed mt-2 pt-2 border-t border-amber-50">
+                            ${data.detailDesc}
+                        </p>
+                    </div>
+                `;
+            });
+
+            const panel = document.getElementById('panel-content');
+            panel.style.opacity = 0;
+            setTimeout(() => {
+                panel.innerHTML = panelHtml;
+                panel.style.opacity = 1;
+            }, 150);
+            panel.style.transition = 'opacity 0.3s';
+        }
+
+        window.onload = () => {
+            setTimeout(() => setSeason('spring'), 100);
+        };
+    </script>
+</body>
+</html>
