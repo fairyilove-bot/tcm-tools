@@ -1,0 +1,365 @@
+
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五脏十二长生</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入中文字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #fdfbf7;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .clock-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+            border-radius: 50%;
+            border: 2px dashed #d1d5db;
+        }
+        .node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .node:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .active-node {
+            transform: translate(-50%, -50%) scale(1.15);
+            z-index: 10;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        /* 中医古典配色 */
+        .theme-liver { --active-bg: #f0fdf4; --active-border: #16a34a; --active-text: #14532d; }
+        .theme-heart { --active-bg: #fef2f2; --active-border: #dc2626; --active-text: #7f1d1d; }
+        .theme-spleen { --active-bg: #fffbeb; --active-border: #d97706; --active-text: #78350f; }
+        .theme-lung { --active-bg: #f3f4f6; --active-border: #4b5563; --active-text: #1f2937; }
+        .theme-kidney { --active-bg: #eff6ff; --active-border: #2563eb; --active-text: #1e3a8a; }
+        
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+<div id="app" class="flex-grow flex flex-col" :class="themeClass">
+    
+    <!-- 顶部标题区 -->
+    <header class="text-center py-8 px-4 bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-0 z-20">
+        <h1 class="text-3xl md:text-4xl font-bold tracking-widest text-gray-900 mb-2">五脏十二长生图</h1>
+        <p class="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
+            “十二长生”是古代五行学说中描述事物从发生、繁荣到衰亡、再孕育的十二个阶段。本演示结合中医子午流注与五行理论，展示人体五脏气机在一天十二时辰中的起伏变化。
+        </p>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 items-start">
+        
+        <!-- 左侧：控制与图表区 -->
+        <div class="w-full lg:w-1/2 flex flex-col items-center">
+            
+            <!-- 五脏选择器 -->
+            <div class="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap justify-center gap-2 mb-8">
+                <button v-for="organ in organs" :key="organ.id" 
+                        @click="activeOrganId = organ.id"
+                        class="px-5 py-2 rounded-xl transition-all duration-300 font-semibold border-2"
+                        :class="activeOrganId === organ.id ? organ.btnClassActive : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700'">
+                    {{ organ.name }}
+                </button>
+            </div>
+
+            <div class="flex justify-between w-full max-w-[480px] mb-4 px-2 items-end">
+                <h2 class="text-xl font-bold text-gray-800">十二时辰转盘</h2>
+                <button @click="setCurrentTime" class="text-sm px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors text-gray-700 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                    </svg>
+                    定位当前时辰
+                </button>
+            </div>
+
+            <!-- 时辰表盘 -->
+            <div class="clock-container bg-white shadow-inner">
+                <!-- 中心信息 -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center w-3/5 h-3/5 rounded-full border border-gray-100"
+                     :style="{ backgroundColor: 'var(--active-bg)' }">
+                    <transition name="fade" mode="out-in">
+                        <div :key="activeShichen.id" class="flex flex-col items-center">
+                            <span class="text-5xl font-bold mb-1" :style="{ color: 'var(--active-text)' }">
+                                {{ getStageName(activeShichen.id) }}
+                            </span>
+                            <span class="text-lg text-gray-700 font-semibold">{{ activeShichen.name }} ({{ activeShichen.branch }})</span>
+                            <span class="text-sm text-gray-500">{{ activeShichen.time }}</span>
+                        </div>
+                    </transition>
+                </div>
+
+                <!-- 12个节点 -->
+                <div v-for="(shichen, index) in shichenList" :key="shichen.id"
+                     @click="activeShichenId = shichen.id"
+                     class="node w-14 h-14 md:w-16 md:h-16 rounded-full flex flex-col items-center justify-center border-2 bg-white"
+                     :class="activeShichenId === shichen.id ? 'active-node border-[var(--active-border)] shadow-lg' : 'border-gray-200 hover:border-gray-400'"
+                     :style="getNodeStyle(index)">
+                    <span class="text-lg font-bold" :class="activeShichenId === shichen.id ? 'text-[var(--active-text)]' : 'text-gray-800'">
+                        {{ shichen.branch }}
+                    </span>
+                    <span class="text-xs font-semibold px-1 rounded"
+                          :style="{ 
+                              backgroundColor: activeShichenId === shichen.id ? 'var(--active-bg)' : '#f3f4f6',
+                              color: activeShichenId === shichen.id ? 'var(--active-text)' : '#4b5563'
+                          }">
+                        {{ getStageName(shichen.id) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：详情解说区 -->
+        <div class="w-full lg:w-1/2 flex flex-col space-y-6">
+            
+            <!-- 脏腑简介 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full" :style="{ backgroundColor: 'var(--active-border)' }"></div>
+                <h3 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                    <span :style="{ color: 'var(--active-text)' }">{{ activeOrgan.name.split(' ')[0] }}</span>
+                    <span class="text-lg font-normal text-gray-500">{{ activeOrgan.name.split(' ')[1] }}</span>
+                </h3>
+                <p class="text-gray-700 leading-relaxed text-lg">{{ activeOrgan.desc }}</p>
+            </div>
+
+            <!-- 当前状态解析 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-grow">
+                <div class="flex items-end gap-3 mb-6 pb-4 border-b border-gray-100">
+                    <h3 class="text-2xl font-bold text-gray-800">状态解析</h3>
+                    <span class="text-gray-500 mb-1">@ {{ activeShichen.name }} ({{ activeShichen.time }})</span>
+                </div>
+                
+                <transition name="fade" mode="out-in">
+                    <div :key="`${activeOrganId}-${activeShichenId}`">
+                        <div class="mb-6 flex items-start gap-4">
+                            <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shrink-0 shadow-inner"
+                                 :style="{ backgroundColor: 'var(--active-bg)', color: 'var(--active-text)' }">
+                                {{ currentStage }}
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800 mb-1">【{{ currentStage }}】阶段含义</h4>
+                                <p class="text-gray-600 leading-relaxed">{{ getStageDesc(currentStage) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                            <h4 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :style="{ color: 'var(--active-border)' }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                调养建议
+                            </h4>
+                            <p class="text-gray-700 leading-relaxed text-justify">
+                                {{ generateAdvice() }}
+                            </p>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-400 text-sm mt-auto">
+        注：十二长生模型来源于古代命理与五行学说，版权为Jason张医生所有，严禁转载。
+    </footer>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    // 十二时辰数据 (子时为0)
+    const shichenList = [
+        { id: 0, name: '子时', time: '23:00-01:00', branch: '子' },
+        { id: 1, name: '丑时', time: '01:00-03:00', branch: '丑' },
+        { id: 2, name: '寅时', time: '03:00-05:00', branch: '寅' },
+        { id: 3, name: '卯时', time: '05:00-07:00', branch: '卯' },
+        { id: 4, name: '辰时', time: '07:00-09:00', branch: '辰' },
+        { id: 5, name: '巳时', time: '09:00-11:00', branch: '巳' },
+        { id: 6, name: '午时', time: '11:00-13:00', branch: '午' },
+        { id: 7, name: '未时', time: '13:00-15:00', branch: '未' },
+        { id: 8, name: '申时', time: '15:00-17:00', branch: '申' },
+        { id: 9, name: '酉时', time: '17:00-19:00', branch: '酉' },
+        { id: 10, name: '戌时', time: '19:00-21:00', branch: '戌' },
+        { id: 11, name: '亥时', time: '21:00-23:00', branch: '亥' }
+    ];
+
+    // 十二长生顺序
+    const stages = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
+
+    // 阶段含义
+    const stageDescriptions = {
+        "长生": "如同婴儿刚出生，充满了生机与活力，是气机生发、万物向荣的开始。",
+        "沐浴": "如降生后洗浴除垢，形体柔弱，气机虽在增长但极易受外界邪气侵袭。",
+        "冠带": "如同人逐渐长大穿衣戴帽，生机渐旺，功能开始逐渐步入正轨。",
+        "临官": "气机健旺，如人出仕做官，身体功能强盛，能担重任。",
+        "帝旺": "气机达到最旺盛的顶点，此时该脏腑的功能处于全天最高峰。",
+        "衰": "物极必反，旺极而衰。气机开始走下坡路，功能渐渐减退。",
+        "病": "气机衰弱，容易出现疲劳或功能不佳，防御力下降。",
+        "死": "这里的“死”并非死亡，而是指气机静止不动，脏气降至最低点，生机潜藏。",
+        "墓": "气机入库，如人归墓。脏腑进入深度的休整与收敛状态，储备能量。",
+        "绝": "气机绝灭到了极点，旧气已尽，但也是物极必反、新循环即将开始的前兆。",
+        "胎": "新的气机开始孕育，极其微弱，需要极大的安静来保护。",
+        "养": "气机在母体中逐渐成形、积蓄力量，蓄势待发，为下一次“长生”做准备。"
+    };
+
+    // 五脏属性与长生起算点 (基于五行: 木长生在亥, 火土长生在寅, 金长生在巳, 水长生在申)
+    const organs = [
+        { 
+            id: 'liver', name: '肝 (木)', offset: 11, // 亥时(11)起长生
+            desc: '肝属木，主疏泄，藏血，在志为怒，在体合筋，开窍于目。肝气通于春，喜条达而恶抑郁。',
+            btnClassActive: 'bg-green-50 border-green-500 text-green-700'
+        },
+        { 
+            id: 'heart', name: '心 (火)', offset: 2, // 寅时(2)起长生
+            desc: '心属火，主血脉，藏神，在志为喜，在体合脉，开窍于舌。心为君主之官，生命之主宰。',
+            btnClassActive: 'bg-red-50 border-red-500 text-red-700'
+        },
+        { 
+            id: 'spleen', name: '脾 (土)', offset: 2, // 寅时(2)起长生 (火土同宫)
+            desc: '脾属土，主运化，统血，在志为思，在体合肌肉，开窍于口。脾为后天之本，气血生化之源。',
+            btnClassActive: 'bg-yellow-50 border-yellow-500 text-yellow-700'
+        },
+        { 
+            id: 'lung', name: '肺 (金)', offset: 5, // 巳时(5)起长生
+            desc: '肺属金，主气，司呼吸，主宣发肃降，在体合皮毛，开窍于鼻。肺为华盖，娇脏，畏寒畏热。',
+            btnClassActive: 'bg-gray-100 border-gray-600 text-gray-800'
+        },
+        { 
+            id: 'kidney', name: '肾 (水)', offset: 8, // 申时(8)起长生
+            desc: '肾属水，藏精，主水，主纳气，在体合骨生髓，开窍于耳及二阴。肾为先天之本，生命之根。',
+            btnClassActive: 'bg-blue-50 border-blue-500 text-blue-700'
+        }
+    ];
+
+    const app = createApp({
+        setup() {
+            const activeOrganId = ref('liver');
+            const activeShichenId = ref(0);
+
+            const activeOrgan = computed(() => organs.find(o => o.id === activeOrganId.value));
+            const activeShichen = computed(() => shichenList.find(s => s.id === activeShichenId.value));
+            
+            const themeClass = computed(() => `theme-${activeOrganId.value}`);
+
+            // 计算某一时辰下，当前所选脏腑处于哪个“长生”阶段
+            const getStageName = (shichenId) => {
+                const offset = activeOrgan.value.offset;
+                const stageIndex = (shichenId - offset + 12) % 12;
+                return stages[stageIndex];
+            };
+
+            const currentStage = computed(() => getStageName(activeShichenId.value));
+
+            const getStageDesc = (stageName) => stageDescriptions[stageName];
+
+            // 动态生成养生建议
+            const generateAdvice = () => {
+                const organ = activeOrgan.value.name.split(' ')[0]; // 取 肝、心 等
+                const stage = currentStage.value;
+                const time = activeShichen.value.time;
+                
+                let adviceText = `当前时段（${time}），${organ}气运行至【${stage}】地步。`;
+
+                // 根据阶段大类给建议
+                if (['临官', '帝旺'].includes(stage)) {
+                    adviceText += `这是${organ}脏功能最鼎盛的时候。宜顺应其气，发挥其功能，但也要注意“物极必反”，不可过度消耗。如有${organ}脏相关疾病，此时往往表现最为明显或得到最强烈的身体抵抗。建议保持心情舒畅，顺势而为。`;
+                } else if (['长生', '冠带'].includes(stage)) {
+                    adviceText += `此时气机正在蓬勃向上发展，是生发、滋养${organ}脏的大好时机。建议可以通过平缓的活动、喝适量的温水或进食对${organ}有益的清淡食物来助长气机，忌过度受寒或情绪重压扼杀生机。`;
+                } else if (['衰', '病'].includes(stage)) {
+                    adviceText += `${organ}气开始走向疲软。此时不宜强行使气，应减少耗费${organ}脏相关的精力（例如肝衰时少熬夜少发怒，脾病时少吃生冷油腻）。宜静不宜动，给脏腑喘息恢复的空间。`;
+                } else if (['死', '墓', '绝'].includes(stage)) {
+                    adviceText += `气机极其低落并进入深度潜藏。此时${organ}脏需要绝对的休息和封藏。最忌讳在这个时段强行激发脏腑功能（如深夜剧烈运动耗阳，或过量饮酒伤肝肾）。最好的调养就是睡眠、冥想或处于极度放松的状态，让脏气在“库墓”中自我修复。`;
+                } else if (['胎', '养', '沐浴'].includes(stage)) {
+                    adviceText += `气机犹如初生婴儿般稚嫩脆弱。虽然在孕育新生，但极易受到外邪（风寒暑湿燥火）的侵害。此时调养以“护”为主，注意保暖防风，避免情绪剧烈波动，给予脏腑最温和的生存环境。`;
+                }
+
+                // 针对特定脏腑在特定阶段的特殊补充
+                if (organ === '肝' && stage === '帝旺') {
+                    adviceText += ' 卯时肝气最旺，早起伸个懒腰，散步呼吸新鲜空气，最能生发肝木之气。';
+                } else if (organ === '心' && stage === '帝旺') {
+                    adviceText += ' 午时心火最旺，宜小憩（午睡）片刻，以养心神，切忌剧烈运动大汗伤心阴。';
+                } else if (organ === '脾' && stage === '死') {
+                    adviceText += ' 酉时脾气休止，晚饭不宜过晚过饱，以免增加脾胃负担，难以运化。';
+                } else if (organ === '肾' && stage === '长生') {
+                    adviceText += ' 申时肾水初生，此时喝一杯温水，有助于膀胱经排毒并滋养肾水。';
+                }
+
+                return adviceText;
+            };
+
+            // 计算节点在圆盘上的位置 (数学极坐标转笛卡尔坐标)
+            const getNodeStyle = (index) => {
+                // 子时(0)在正下方(90度), 午时(6)在正上方(-90度)
+                // 角度计算: 减去 90度 使得 0 对应顶部。但我们要子时在顶部还是底部？
+                // 按照中国传统罗盘，南方(午)在顶部，北方(子)在底部。
+                // index = 0(子), angle = 90度 (底部)
+                // index = 6(午), angle = 270度/-90度 (顶部)
+                // index = 3(卯), angle = 180度 (左侧 - 东方)
+                // index = 9(酉), angle = 0度 (右侧 - 西方)
+                
+                const angleDeg = index * 30 + 90;
+                const angleRad = angleDeg * Math.PI / 180;
+                
+                // 半径比例 40% (留出边缘空间)
+                const radius = 40; 
+                
+                const x = 50 + radius * Math.cos(angleRad);
+                const y = 50 + radius * Math.sin(angleRad);
+                
+                return {
+                    left: `${x}%`,
+                    top: `${y}%`
+                };
+            };
+
+            // 获取并设置当前时间的时辰
+            const setCurrentTime = () => {
+                const hour = new Date().getHours();
+                // 23:00-01:00 为子时(0), 01:00-03:00 为丑时(1)...
+                // 公式: Math.floor((hour + 1) % 24 / 2)
+                const shichenId = Math.floor((hour + 1) % 24 / 2);
+                activeShichenId.value = shichenId;
+            };
+
+            onMounted(() => {
+                setCurrentTime(); // 初始化时自动定位到当前时辰
+            });
+
+            return {
+                shichenList,
+                organs,
+                activeOrganId,
+                activeShichenId,
+                activeOrgan,
+                activeShichen,
+                currentStage,
+                themeClass,
+                getStageName,
+                getStageDesc,
+                generateAdvice,
+                getNodeStyle,
+                setCurrentTime
+            };
+        }
+    });
+
+    app.mount('#app');
+</script>
+</body>
+</html>
