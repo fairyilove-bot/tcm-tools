@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命理基础互动教学系统 - 天干地支相冲相合</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        paper: '#F4ECD8',      /* 宣纸底色 */
+                        ink: '#2A2A2A',        /* 水墨黑 */
+                        cinnabar: '#A73322',   /* 朱砂红 */
+                        gold: '#C59B4B',       /* 暗金色 */
+                        jade: '#4B7B5C',       /* 玉绿色 */
+                        water: '#3A5F7D',      /* 水蓝色 */
+                        lapis: '#28598B',      /* 青蓝色 (三合) */
+                        plum: '#6B4A5B'        /* 紫红色 (三会) */
+                    },
+                    fontFamily: {
+                        'serif': ['"Noto Serif SC"', '"SimSun"', '"STSong"', 'serif'],
+                        'sans': ['"PingFang SC"', '"Microsoft YaHei"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Noto Serif SC', 'SimSun', serif; background-color: #F4ECD8; color: #2A2A2A; }
+        .tab-active { border-bottom: 2px solid #A73322; color: #A73322; font-weight: bold; }
+        
+        /* 12地支宫格样式 */
+        .palace-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 400px;
+            margin: 0 auto;
+            aspect-ratio: 1 / 1;
+        }
+        .palace-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 1px solid #C59B4B;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #fffaf0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .palace-cell:hover:not(.empty) { background-color: #fef3c7; transform: scale(1.05); }
+        .palace-cell.empty { border: none; background: transparent; cursor: default; box-shadow: none; }
+        
+        /* 交互状态样式 */
+        .cell-selected { background-color: #C59B4B !important; color: white; border-color: #C59B4B; transform: scale(1.05); box-shadow: 0 4px 10px rgba(197,155,75,0.4); }
+        .cell-clash { background-color: #A73322 !important; color: white; border-color: #A73322; animation: pulse-red 2s infinite; }
+        .cell-combo { background-color: #4B7B5C !important; color: white; border-color: #4B7B5C; animation: pulse-green 2s infinite; }
+        .cell-tri { background-color: #28598B !important; color: white; border-color: #28598B; animation: pulse-blue 2s infinite; }
+        .cell-season { background-color: #6B4A5B !important; color: white; border-color: #6B4A5B; animation: pulse-purple 2s infinite; }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(167, 51, 34, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(167, 51, 34, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(167, 51, 34, 0); }
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(75, 123, 92, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(75, 123, 92, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(75, 123, 92, 0); }
+        }
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 0 0 rgba(40, 89, 139, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 89, 139, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 89, 139, 0); }
+        }
+        @keyframes pulse-purple {
+            0% { box-shadow: 0 0 0 0 rgba(107, 74, 91, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(107, 74, 91, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(107, 74, 91, 0); }
+        }
+
+        .element-wood { color: #4B7B5C; }
+        .element-fire { color: #A73322; }
+        .element-earth { color: #B08D57; }
+        .element-metal { color: #D4AF37; }
+        .element-water { color: #3A5F7D; }
+
+        /* 元素卡片 */
+        .card { background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 顶部导航 -->
+    <header class="bg-white border-b border-gold shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <span class="text-3xl text-cinnabar font-bold tracking-widest">☯</span>
+                    <h1 class="text-xl sm:text-2xl font-bold text-ink tracking-widest">命理基础系统</h1>
+                </div>
+            </div>
+            <!-- 标签页导航 -->
+            <nav class="flex overflow-x-auto gap-4 sm:gap-8 pb-1 no-scrollbar text-sm sm:text-base font-sans" id="tabs">
+                <button onclick="switchTab('basics')" class="tab-btn tab-active pb-2 whitespace-nowrap px-1" data-target="basics">天干地支基础</button>
+                <button onclick="switchTab('interactive')" class="tab-btn pb-2 whitespace-nowrap text-gray-500 hover:text-ink px-1" data-target="interactive">十二地支互动罗盘</button>
+                <button onclick="switchTab('stems')" class="tab-btn pb-2 whitespace-nowrap text-gray-500 hover:text-ink px-1" data-target="stems">全面冲合关系</button>
+                <button onclick="switchTab('quiz')" class="tab-btn pb-2 whitespace-nowrap text-gray-500 hover:text-ink px-1" data-target="quiz">随堂测验</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="flex-grow max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- ================= 模块一：基础知识 ================= -->
+        <section id="basics" class="tab-content block animate-fade-in">
+            <h2 class="text-2xl font-bold text-cinnabar mb-6 flex items-center gap-2 border-l-4 border-cinnabar pl-3">十天干</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-10">
+                <!-- 天干由JS渲染 -->
+                <div id="stems-container" class="col-span-2 sm:col-span-5 grid grid-cols-2 sm:grid-cols-5 gap-4"></div>
+            </div>
+
+            <h2 class="text-2xl font-bold text-cinnabar mb-6 flex items-center gap-2 border-l-4 border-cinnabar pl-3">十二地支</h2>
+            <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+                <!-- 地支由JS渲染 -->
+                <div id="branches-container" class="col-span-3 sm:col-span-4 lg:grid-cols-6 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 w-full"></div>
+            </div>
+        </section>
+
+        <!-- ================= 模块二：互动罗盘 (核心) ================= -->
+        <section id="interactive" class="tab-content hidden animate-fade-in">
+            <div class="bg-white rounded-xl shadow-md p-6 border border-gold/30">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-ink mb-2">十二地支掌诀互动罗盘</h2>
+                    <p class="text-gray-600 font-sans text-sm">点击任意一个地支，查看与其相关的作用关系。<br>（注：排布方式采用传统左手掌诀图）</p>
+                    <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm font-sans bg-paper inline-block px-4 py-2 rounded-full border border-gold/30 w-fit mx-auto">
+                        <label class="flex items-center gap-1 cursor-pointer hover:text-cinnabar transition"><input type="radio" name="palace-mode" value="basic" checked onchange="changeMode('basic')"> 六冲与六合</label>
+                        <label class="flex items-center gap-1 cursor-pointer hover:text-lapis transition"><input type="radio" name="palace-mode" value="tri" onchange="changeMode('tri')"> 三合局</label>
+                        <label class="flex items-center gap-1 cursor-pointer hover:text-plum transition"><input type="radio" name="palace-mode" value="season" onchange="changeMode('season')"> 三会方</label>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <!-- 左侧：罗盘/宫格 -->
+                    <div class="w-full md:w-1/2 flex justify-center">
+                        <div class="palace-grid w-full">
+                            <!-- 第1行 -->
+                            <div class="palace-cell" data-branch="巳">巳</div>
+                            <div class="palace-cell" data-branch="午">午</div>
+                            <div class="palace-cell" data-branch="未">未</div>
+                            <div class="palace-cell" data-branch="申">申</div>
+                            <!-- 第2行 -->
+                            <div class="palace-cell" data-branch="辰">辰</div>
+                            <div class="palace-cell empty"></div>
+                            <div class="palace-cell empty"></div>
+                            <div class="palace-cell" data-branch="酉">酉</div>
+                            <!-- 第3行 -->
+                            <div class="palace-cell" data-branch="卯">卯</div>
+                            <div class="palace-cell empty"></div>
+                            <div class="palace-cell empty"></div>
+                            <div class="palace-cell" data-branch="戌">戌</div>
+                            <!-- 第4行 -->
+                            <div class="palace-cell" data-branch="寅">寅</div>
+                            <div class="palace-cell" data-branch="丑">丑</div>
+                            <div class="palace-cell" data-branch="子">子</div>
+                            <div class="palace-cell" data-branch="亥">亥</div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：解析面板 -->
+                    <div class="w-full md:w-1/2 bg-paper rounded-lg p-6 min-h-[300px] border border-gold/20 flex flex-col justify-center">
+                        <div id="interactive-placeholder" class="text-center text-gray-500">
+                            <span class="text-5xl block mb-4 opacity-30">👆</span>
+                            <p>请在左侧点击一个地支开始</p>
+                            <p class="text-sm mt-2">相冲：方位相对，五行相克<br>相合：阴阳相吸，气场相投</p>
+                        </div>
+                        
+                        <div id="interactive-content" class="hidden">
+                            <h3 class="text-3xl font-bold text-center mb-6 border-b border-gold/30 pb-4">
+                                当前选中：<span id="selected-branch" class="text-gold text-4xl mx-2">子</span>
+                            </h3>
+                            
+                            <!-- 模式一：六冲六合 -->
+                            <div id="content-basic" class="space-y-6">
+                                <!-- 相冲解析 -->
+                                <div class="bg-white p-4 rounded-lg border-l-4 border-cinnabar shadow-sm">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="bg-cinnabar text-white px-2 py-1 rounded text-sm">六冲</span>
+                                        <h4 class="text-xl font-bold text-ink"><span id="clash-pair" class="tracking-widest">子午冲</span></h4>
+                                    </div>
+                                    <p id="clash-desc" class="text-gray-700 font-sans leading-relaxed text-sm">
+                                        解析文本...
+                                    </p>
+                                </div>
+
+                                <!-- 相合解析 -->
+                                <div class="bg-white p-4 rounded-lg border-l-4 border-jade shadow-sm">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="bg-jade text-white px-2 py-1 rounded text-sm">六合</span>
+                                        <h4 class="text-xl font-bold text-ink"><span id="combo-pair" class="tracking-widest">子丑合</span></h4>
+                                    </div>
+                                    <p id="combo-desc" class="text-gray-700 font-sans leading-relaxed text-sm">
+                                        解析文本...
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- 模式二：三合局 -->
+                            <div id="content-tri" class="hidden space-y-6">
+                                <div class="bg-white p-4 rounded-lg border-l-4 border-lapis shadow-sm">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="bg-lapis text-white px-2 py-1 rounded text-sm">三合</span>
+                                        <h4 class="text-xl font-bold text-ink"><span id="tri-pair" class="tracking-widest">申子辰三合水局</span></h4>
+                                    </div>
+                                    <p id="tri-desc" class="text-gray-700 font-sans leading-relaxed text-sm">
+                                        解析文本...
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 模式三：三会方 -->
+                            <div id="content-season" class="hidden space-y-6">
+                                <div class="bg-white p-4 rounded-lg border-l-4 border-plum shadow-sm">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="bg-plum text-white px-2 py-1 rounded text-sm">三会</span>
+                                        <h4 class="text-xl font-bold text-ink"><span id="season-pair" class="tracking-widest">亥子丑三会北方水</span></h4>
+                                    </div>
+                                    <p id="season-desc" class="text-gray-700 font-sans leading-relaxed text-sm">
+                                        解析文本...
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 模块三：全面冲合关系 ================= -->
+        <section id="stems" class="tab-content hidden animate-fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <!-- 天干五合 -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-jade">
+                    <h2 class="text-2xl font-bold text-ink mb-4 flex items-center justify-between">
+                        <span>天干五合</span>
+                        <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">阴阳相吸而合</span>
+                    </h2>
+                    <ul class="space-y-4 font-sans text-gray-700">
+                        <li class="flex justify-between items-center p-3 hover:bg-paper rounded transition">
+                            <span class="text-lg font-bold"><span class="element-wood">甲</span> 己 合化 <span class="element-earth">土</span></span>
+                            <span class="text-sm text-gray-500">中正之合 (尊崇重大)</span>
+                        </li>
+                        <li class="flex justify-between items-center p-3 hover:bg-paper rounded transition">
+                            <span class="text-lg font-bold"><span class="element-wood">乙</span> 庚 合化 <span class="element-metal">金</span></span>
+                            <span class="text-sm text-gray-500">仁义之合 (刚柔并济)</span>
+                        </li>
+                        <li class="flex justify-between items-center p-3 hover:bg-paper rounded transition">
+                            <span class="text-lg font-bold"><span class="element-fire">丙</span> 辛 合化 <span class="element-water">水</span></span>
+                            <span class="text-sm text-gray-500">威制之合 (偏重威严)</span>
+                        </li>
+                        <li class="flex justify-between items-center p-3 hover:bg-paper rounded transition">
+                            <span class="text-lg font-bold"><span class="element-fire">丁</span> 壬 合化 <span class="element-wood">木</span></span>
+                            <span class="text-sm text-gray-500">淫佚之合 (感情丰富)</span>
+                        </li>
+                        <li class="flex justify-between items-center p-3 hover:bg-paper rounded transition">
+                            <span class="text-lg font-bold"><span class="element-earth">戊</span> 癸 合化 <span class="element-fire">火</span></span>
+                            <span class="text-sm text-gray-500">无情之合 (老少之配)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 天干相冲 -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-cinnabar">
+                    <h2 class="text-2xl font-bold text-ink mb-4 flex items-center justify-between">
+                        <span>天干四冲</span>
+                        <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">方位相对，同性相斥</span>
+                    </h2>
+                    <ul class="space-y-4 font-sans text-gray-700">
+                        <li class="flex flex-col p-3 hover:bg-paper rounded transition gap-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-bold"><span class="element-wood">甲</span> <span class="element-metal">庚</span> 相冲</span>
+                                <span class="text-sm text-cinnabar">阳木 vs 阳金</span>
+                            </div>
+                            <span class="text-sm text-gray-500">庚金克甲木，主头部、筋骨之伤或变动。</span>
+                        </li>
+                        <li class="flex flex-col p-3 hover:bg-paper rounded transition gap-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-bold"><span class="element-wood">乙</span> <span class="element-metal">辛</span> 相冲</span>
+                                <span class="text-sm text-cinnabar">阴木 vs 阴金</span>
+                            </div>
+                            <span class="text-sm text-gray-500">辛金克乙木，主四肢、颈部之伤或琐事纷扰。</span>
+                        </li>
+                        <li class="flex flex-col p-3 hover:bg-paper rounded transition gap-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-bold"><span class="element-water">壬</span> <span class="element-fire">丙</span> 相冲</span>
+                                <span class="text-sm text-cinnabar">阳水 vs 阳火</span>
+                            </div>
+                            <span class="text-sm text-gray-500">壬水克丙火，主心血管、眼部问题或突发冲突。</span>
+                        </li>
+                        <li class="flex flex-col p-3 hover:bg-paper rounded transition gap-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-bold"><span class="element-water">癸</span> <span class="element-fire">丁</span> 相冲</span>
+                                <span class="text-sm text-cinnabar">阴水 vs 阴火</span>
+                            </div>
+                            <span class="text-sm text-gray-500">癸水克丁火，主血液、心脏或精神压力。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 新增：地支进阶合局 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 地支三合与半合 -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-lapis">
+                    <h2 class="text-2xl font-bold text-ink mb-4 flex items-center justify-between">
+                        <span>地支三合 & 半合</span>
+                        <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">气场凝结，力量强大</span>
+                    </h2>
+                    <div class="space-y-4 font-sans text-gray-700">
+                        <p class="text-sm text-gray-500 mb-2">三合局由长生、帝旺、墓库三个地支组成，是五行力量的结盟。缺少其中一个且包含中神（子午卯酉）的称为“半合”。</p>
+                        <ul class="space-y-3">
+                            <li class="p-3 bg-blue-50/50 rounded border border-blue-100 hover:bg-blue-50 transition">
+                                <div class="font-bold text-lg mb-1">申子辰 三合<span class="element-water">水</span>局</div>
+                                <div class="text-sm text-gray-600">半合：申子(生半合水)、子辰(墓半合水)</div>
+                            </li>
+                            <li class="p-3 bg-green-50/50 rounded border border-green-100 hover:bg-green-50 transition">
+                                <div class="font-bold text-lg mb-1">亥卯未 三合<span class="element-wood">木</span>局</div>
+                                <div class="text-sm text-gray-600">半合：亥卯(生半合木)、卯未(墓半合木)</div>
+                            </li>
+                            <li class="p-3 bg-red-50/50 rounded border border-red-100 hover:bg-red-50 transition">
+                                <div class="font-bold text-lg mb-1">寅午戌 三合<span class="element-fire">火</span>局</div>
+                                <div class="text-sm text-gray-600">半合：寅午(生半合火)、午戌(墓半合火)</div>
+                            </li>
+                            <li class="p-3 bg-yellow-50/50 rounded border border-yellow-100 hover:bg-yellow-50 transition">
+                                <div class="font-bold text-lg mb-1">巳酉丑 三合<span class="element-metal">金</span>局</div>
+                                <div class="text-sm text-gray-600">半合：巳酉(生半合金)、酉丑(墓半合金)</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 地支三会与暗合 -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-plum flex flex-col gap-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-ink mb-4 flex items-center justify-between">
+                            <span>地支三会方</span>
+                            <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">季节汇聚，一方之气</span>
+                        </h2>
+                        <ul class="space-y-2 font-sans text-gray-700 text-sm">
+                            <li class="flex justify-between p-2 hover:bg-paper rounded">
+                                <strong>寅卯辰</strong><span>三会<span class="element-wood font-bold">东方木</span> (春季)</span>
+                            </li>
+                            <li class="flex justify-between p-2 hover:bg-paper rounded">
+                                <strong>巳午未</strong><span>三会<span class="element-fire font-bold">南方火</span> (夏季)</span>
+                            </li>
+                            <li class="flex justify-between p-2 hover:bg-paper rounded">
+                                <strong>申酉戌</strong><span>三会<span class="element-metal font-bold">西方金</span> (秋季)</span>
+                            </li>
+                            <li class="flex justify-between p-2 hover:bg-paper rounded">
+                                <strong>亥子丑</strong><span>三会<span class="element-water font-bold">北方水</span> (冬季)</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-2xl font-bold text-ink mb-4 flex items-center justify-between">
+                            <span>地支暗合</span>
+                            <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">藏干交合，私下相投</span>
+                        </h2>
+                        <ul class="space-y-2 font-sans text-gray-700 text-sm">
+                            <li class="flex justify-between p-2 hover:bg-paper rounded">
+                                <strong>寅丑 暗合</strong><span class="text-gray-500">寅中甲丙戊 与 丑中己辛癸 互合</span>
+                            </li>
+                            <li class="flex justify-between p-2 hover:bg-paper rounded">
+                                <strong>午亥 暗合</strong><span class="text-gray-500">午中丁己 与 亥中壬甲 互合</span>
+                            </li>
+                            <li class="flex justify-between p-2 hover:bg-paper rounded">
+                                <strong>卯申 暗合</strong><span class="text-gray-500">卯中乙 与 申中庚 互合</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 模块四：随堂测验 ================= -->
+        <section id="quiz" class="tab-content hidden animate-fade-in">
+            <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8">
+                <div id="quiz-intro" class="text-center">
+                    <h2 class="text-2xl font-bold text-ink mb-4">冲合知识测验</h2>
+                    <p class="text-gray-600 mb-8 font-sans">完成基础学习后，来测试一下你对天干地支相冲相合的掌握程度吧！</p>
+                    <button onclick="startQuiz()" class="bg-cinnabar hover:bg-red-800 text-white font-bold py-3 px-8 rounded-full transition shadow-md">
+                        开始测试
+                    </button>
+                </div>
+
+                <div id="quiz-area" class="hidden">
+                    <div class="flex justify-between items-center mb-6 text-sm text-gray-500 font-sans border-b pb-2">
+                        <span>进度: <span id="q-progress" class="font-bold text-ink">1/5</span></span>
+                        <span>得分: <span id="q-score" class="font-bold text-ink">0</span></span>
+                    </div>
+                    
+                    <h3 id="q-text" class="text-xl font-bold text-ink mb-6 h-16">题目加载中...</h3>
+                    
+                    <div id="q-options" class="space-y-3 font-sans">
+                        <!-- 选项由JS渲染 -->
+                    </div>
+
+                    <div id="q-feedback" class="mt-6 p-4 rounded-lg hidden text-sm font-sans">
+                        <!-- 反馈信息 -->
+                    </div>
+
+                    <div class="mt-6 text-right">
+                        <button id="q-next-btn" onclick="nextQuestion()" class="hidden bg-gold hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded transition">
+                            下一题
+                        </button>
+                    </div>
+                </div>
+
+                <div id="quiz-result" class="hidden text-center py-8">
+                    <h2 class="text-3xl font-bold text-ink mb-4">测试完成！</h2>
+                    <p class="text-xl mb-2">你的得分是：<span id="final-score" class="text-cinnabar font-bold text-4xl">100</span> 分</p>
+                    <p id="result-message" class="text-gray-600 font-sans mb-8">评价...</p>
+                    <button onclick="startQuiz()" class="bg-jade hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition shadow-md">
+                        重新测试
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-ink text-white py-6 mt-auto">
+        <div class="max-w-5xl mx-auto text-center font-sans text-sm text-gray-400">
+            <p>命理基础互动教学系统 &copy; 2026</p>
+            <p class="mt-1">易学智慧 · 科学传承</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript 逻辑 -->
+    <script>
+        // === 基础数据 ===
+        const stemsData = [
+            { name: '甲', pinyin: 'jiǎ', element: '木', yinYang: '阳', css: 'element-wood' },
+            { name: '乙', pinyin: 'yǐ', element: '木', yinYang: '阴', css: 'element-wood' },
+            { name: '丙', pinyin: 'bǐng', element: '火', yinYang: '阳', css: 'element-fire' },
+            { name: '丁', pinyin: 'dīng', element: '火', yinYang: '阴', css: 'element-fire' },
+            { name: '戊', pinyin: 'wù', element: '土', yinYang: '阳', css: 'element-earth' },
+            { name: '己', pinyin: 'jǐ', element: '土', yinYang: '阴', css: 'element-earth' },
+            { name: '庚', pinyin: 'gēng', element: '金', yinYang: '阳', css: 'element-metal' },
+            { name: '辛', pinyin: 'xīn', element: '金', yinYang: '阴', css: 'element-metal' },
+            { name: '壬', pinyin: 'rén', element: '水', yinYang: '阳', css: 'element-water' },
+            { name: '癸', pinyin: 'guǐ', element: '水', yinYang: '阴', css: 'element-water' }
+        ];
+
+        const branchesData = [
+            { name: '子', pinyin: 'zǐ', element: '水', yinYang: '阳', zodiac: '鼠', css: 'element-water' },
+            { name: '丑', pinyin: 'chǒu', element: '土', yinYang: '阴', zodiac: '牛', css: 'element-earth' },
+            { name: '寅', pinyin: 'yín', element: '木', yinYang: '阳', zodiac: '虎', css: 'element-wood' },
+            { name: '卯', pinyin: 'mǎo', element: '木', yinYang: '阴', zodiac: '兔', css: 'element-wood' },
+            { name: '辰', pinyin: 'chén', element: '土', yinYang: '阳', zodiac: '龙', css: 'element-earth' },
+            { name: '巳', pinyin: 'sì', element: '火', yinYang: '阴', zodiac: '蛇', css: 'element-fire' },
+            { name: '午', pinyin: 'wǔ', element: '火', yinYang: '阳', zodiac: '马', css: 'element-fire' },
+            { name: '未', pinyin: 'wèi', element: '土', yinYang: '阴', zodiac: '羊', css: 'element-earth' },
+            { name: '申', pinyin: 'shēn', element: '金', yinYang: '阳', zodiac: '猴', css: 'element-metal' },
+            { name: '酉', pinyin: 'yǒu', element: '金', yinYang: '阴', zodiac: '鸡', css: 'element-metal' },
+            { name: '戌', pinyin: 'xū', element: '土', yinYang: '阳', zodiac: '狗', css: 'element-earth' },
+            { name: '亥', pinyin: 'hài', element: '水', yinYang: '阴', zodiac: '猪', css: 'element-water' }
+        ];
+
+        // 十二地支关系数据字典 (用于互动罗盘)
+        const branchRelations = {
+            '子': { 
+                clash: '午', combo: '丑', tri: ['申', '辰'], season: ['亥', '丑'],
+                clashDesc: '子水与午火相冲。方位上正北冲正南，五行上水克火。代表气场极端的碰撞，多主变动、分离或心肾不交。', 
+                comboDesc: '子丑合化土。子鼠与丑牛相合。阴阳相合，水土交融，多代表相互牵绊、暗中相助。',
+                triName: '申子辰三合水局', triDesc: '申金生子水，子水入辰库。三者联结力量极大，代表水势浩荡，主大合作、大变动、源源不断的流动。',
+                seasonName: '亥子丑三会北方水', seasonDesc: '集结了整个冬季、北方的水气，力量比三合局更强，代表抱团取暖、地域性的强大结盟。'
+            },
+            '丑': { 
+                clash: '未', combo: '子', tri: ['巳', '酉'], season: ['亥', '子'],
+                clashDesc: '丑土与未土相冲。方位东北冲西南。两土相冲，土气更旺，但藏干互克。主内心矛盾、肠胃问题。', 
+                comboDesc: '子丑合化土。丑牛得子鼠之润，泥土变得滋润湿润，有利于万物生长。',
+                triName: '巳酉丑三合金局', triDesc: '巳火炼金，酉金主气，丑土生金库。代表坚定不移、改革、金融或机械相关的联合。',
+                seasonName: '亥子丑三会北方水', seasonDesc: '丑为水之余气，顺从亥子之水。代表冬季水气的延续和聚集。'
+            },
+            '寅': { 
+                clash: '申', combo: '亥', tri: ['午', '戌'], season: ['卯', '辰'],
+                clashDesc: '寅木与申金相冲。方位东北冲西南，金克木。驿马相冲，主动荡、出行、交通事故或筋骨之伤。', 
+                comboDesc: '寅亥合化木。亥水生寅木，相生之合，关系深厚，代表长辈关爱、贵人相助。',
+                triName: '寅午戌三合火局', triDesc: '寅木生午火，午火入戌库。气势炎上，代表热情、文化、互联网、急速爆发的合作。',
+                seasonName: '寅卯辰三会东方木', seasonDesc: '集结了整个春季、东方的木气。代表生机勃勃、一致对外、势力庞大。'
+            },
+            '卯': { 
+                clash: '酉', combo: '戌', tri: ['亥', '未'], season: ['寅', '辰'],
+                clashDesc: '卯木与酉金相冲。方位正东冲正西，金克木。桃花相冲，主感情纠纷、神经衰弱或利器之伤。', 
+                comboDesc: '卯戌合化火。卯木克戌土，但阴阳相吸而合。代表表面有矛盾但实际能达成共识。',
+                triName: '亥卯未三合木局', triDesc: '亥水生卯木，卯木入未库。主仁慈、生长、教育、文书相关的长远合作。',
+                seasonName: '寅卯辰三会东方木', seasonDesc: '卯为春季极盛之木，统领寅辰，形成强大的东方木气阵营。'
+            },
+            '辰': { 
+                clash: '戌', combo: '酉', tri: ['申', '子'], season: ['寅', '卯'],
+                clashDesc: '辰土与戌土相冲。天罗地网相冲。土气激荡，主居住环境变动、工作转换或脾胃不适。', 
+                comboDesc: '辰酉合化金。辰土生酉金，相生之合。代表顺理成章的合作，互惠互利。',
+                triName: '申子辰三合水局', triDesc: '辰为水库，收纳申子之水。代表资源的整合、归宿、财富的积聚。',
+                seasonName: '寅卯辰三会东方木', seasonDesc: '辰为木之余气，顺从春季木势，代表春末万物繁茂之象。'
+            },
+            '巳': { 
+                clash: '亥', combo: '申', tri: ['酉', '丑'], season: ['午', '未'],
+                clashDesc: '巳火与亥水相冲。方位东南冲西北，水克火。驿马冲，主奔波劳碌、心烦意乱或血液心血管问题。', 
+                comboDesc: '巳申合化水（亦有刑）。火炼秋金，代表关系复杂，既有吸引又有摩擦。',
+                triName: '巳酉丑三合金局', triDesc: '巳火作为起点炼制酉金，归于丑库。代表百炼成钢、制度确立、金融商业合作。',
+                seasonName: '巳午未三会南方火', seasonDesc: '集结了整个夏季、南方的火气。代表光明、炎热、文化传媒、极具扩张力的结盟。'
+            },
+            '午': { 
+                clash: '子', combo: '未', tri: ['寅', '戌'], season: ['巳', '未'],
+                clashDesc: '午火与子水相冲。正南冲正北，水克火。主情绪不稳、突发事件、或者南方与北方之变动。', 
+                comboDesc: '午未合化土/火。午火生未土，阳火生阴土，十分融洽，代表光明正大之合。',
+                triName: '寅午戌三合火局', triDesc: '午火为核心中神，寅木来生，入戌库。力量极大，主张扬、显赫、团队凝聚力高。',
+                seasonName: '巳午未三会南方火', seasonDesc: '午为夏季炎热之极，统领巳未，火势烈焰冲天。'
+            },
+            '未': { 
+                clash: '丑', combo: '午', tri: ['亥', '卯'], season: ['巳', '午'],
+                clashDesc: '未土与丑土相冲。燥土与湿土相冲，库墓相冲，主库藏打开，或为财务纠纷。', 
+                comboDesc: '午未合化土/火。未羊得午马之生，温暖有加。',
+                triName: '亥卯未三合木局', triDesc: '未为木库，收纳亥卯之木。代表传统、稳重、农业或长线投资的丰收。',
+                seasonName: '巳午未三会南方火', seasonDesc: '未为火之余气，顺从夏季火势，代表夏末炎热干燥之象。'
+            },
+            '申': { 
+                clash: '寅', combo: '巳', tri: ['子', '辰'], season: ['酉', '戌'],
+                clashDesc: '申金与寅木相冲。金木交战，主动荡不定、走动多。', 
+                comboDesc: '巳申合化水。申金遇巳火，虽有相克之意，但阴阳相吸，属于先克后合。',
+                triName: '申子辰三合水局', triDesc: '申为水之长生，源头活水生发。代表开创、智慧源泉、交通物流。',
+                seasonName: '申酉戌三会西方金', seasonDesc: '集结了整个秋季、西方的金气。代表肃杀、果断、公检法、强有力的规则结盟。'
+            },
+            '酉': { 
+                clash: '卯', combo: '辰', tri: ['巳', '丑'], season: ['申', '戌'],
+                clashDesc: '酉金与卯木相冲。金克木，桃花冲，易有感情烦恼或四肢小伤。', 
+                comboDesc: '辰酉合化金。酉金得辰土之生，如鱼得水，代表得贵人庇护。',
+                triName: '巳酉丑三合金局', triDesc: '酉为金之帝旺，核心中神。代表刚强、纯粹、珠宝首饰、核心技术的联合。',
+                seasonName: '申酉戌三会西方金', seasonDesc: '酉为秋季极盛之金，统领申戌，金气锐利不可挡。'
+            },
+            '戌': { 
+                clash: '辰', combo: '卯', tri: ['寅', '午'], season: ['申', '酉'],
+                clashDesc: '戌土与辰土相冲。辰戌相冲为网罗之地，主内心压抑、破财或变动。', 
+                comboDesc: '卯戌合化火。戌土得卯木相合，代表暗中的交易或合作。',
+                triName: '寅午戌三合火局', triDesc: '戌为火库，收纳寅午之火。代表精神信仰、网络科技、汇聚光明的归所。',
+                seasonName: '申酉戌三会西方金', seasonDesc: '戌为金之余气，顺从秋季金势，代表秋末万物收敛之象。'
+            },
+            '亥': { 
+                clash: '巳', combo: '寅', tri: ['卯', '未'], season: ['子', '丑'],
+                clashDesc: '亥水与巳火相冲。水火相克，驿马动，主奔波、出差、或情绪起伏。', 
+                comboDesc: '寅亥合化木。亥水生寅木，全心全意之合，非常稳固。',
+                triName: '亥卯未三合木局', triDesc: '亥为木之长生，水生木源源不绝。代表生机孕育、策划、随和包容的开端。',
+                seasonName: '亥子丑三会北方水', seasonDesc: '亥为水气初生之冬，与子丑联结，代表水势的逐渐庞大。'
+            }
+        };
+
+        // 测验数据
+        const quizData = [
+            {
+                question: "在十二地支中，与『子』相冲的地支是哪一个？",
+                options: ["丑 (牛)", "午 (马)", "卯 (兔)", "酉 (鸡)"],
+                correctIndex: 1,
+                explanation: "子午相冲。子代表正北（水），午代表正南（火），水火相冲。"
+            },
+            {
+                question: "以下哪一对属于天干相合？",
+                options: ["甲与庚", "乙与辛", "丙与辛", "丁与癸"],
+                correctIndex: 2,
+                explanation: "丙辛合化水。甲庚、乙辛、丁癸都属于天干相冲/相克的关系。"
+            },
+            {
+                question: "申、子、辰 三个地支组合在一起，构成了什么局？",
+                options: ["三会水方", "三合水局", "三合金局", "互相冲克"],
+                correctIndex: 1,
+                explanation: "申子辰构成三合水局。申(长生)生子(帝旺)，最终入辰(墓库)。"
+            },
+            {
+                question: "哪三个地支组成了『东方木』的三会方？",
+                options: ["亥卯未", "寅卯辰", "巳午未", "申酉戌"],
+                correctIndex: 1,
+                explanation: "寅卯辰代表春季的三个月，构成了强大的东方木气阵营(三会方)。亥卯未是三合木局。"
+            },
+            {
+                question: "地支『寅』和『丑』的关系属于什么？",
+                options: ["六冲", "六合", "暗合", "三会"],
+                correctIndex: 2,
+                explanation: "寅丑属于暗合。寅中的甲丙戊与丑中的己辛癸互相干合，代表私下的投缘。"
+            },
+            {
+                question: "在地支六冲中，与『卯』(兔) 相冲的是？",
+                options: ["酉 (鸡)", "戌 (狗)", "辰 (龙)", "子 (鼠)"],
+                correctIndex: 0,
+                explanation: "卯酉相冲。方位上正东冲正西，五行上酉金克卯木。"
+            }
+        ];
+
+        // === 页面初始化与渲染 ===
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBasics();
+            initInteractivePalace();
+        });
+
+        // 标签页切换逻辑
+        function switchTab(tabId) {
+            // 更新按钮样式
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.dataset.target === tabId) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('text-gray-500', 'hover:text-ink');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('text-gray-500', 'hover:text-ink');
+                }
+            });
+
+            // 更新内容显示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                if(content.id === tabId) {
+                    content.classList.remove('hidden');
+                    content.classList.add('block');
+                } else {
+                    content.classList.remove('block');
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // 渲染第一页基础知识卡片
+        function renderBasics() {
+            const stemsContainer = document.getElementById('stems-container');
+            const branchesContainer = document.getElementById('branches-container');
+
+            // 渲染天干
+            stemsData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `card text-center flex flex-col items-center justify-center py-4 hover:-translate-y-1 transition border-t-2 ${getBorderColor(item.element)}`;
+                card.innerHTML = `
+                    <div class="text-3xl font-bold mb-1 ${item.css}">${item.name}</div>
+                    <div class="text-xs text-gray-400 mb-2">${item.pinyin}</div>
+                    <div class="flex gap-1 text-xs font-sans">
+                        <span class="bg-gray-100 px-2 py-1 rounded">${item.yinYang}</span>
+                        <span class="bg-gray-100 px-2 py-1 rounded">${item.element}</span>
+                    </div>
+                `;
+                stemsContainer.appendChild(card);
+            });
+
+            // 渲染地支
+            branchesData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `card text-center flex flex-col items-center justify-center py-3 hover:-translate-y-1 transition border-t-2 ${getBorderColor(item.element)}`;
+                card.innerHTML = `
+                    <div class="text-3xl font-bold mb-1 ${item.css}">${item.name}</div>
+                    <div class="text-xs text-gray-400 mb-2">${item.pinyin}</div>
+                    <div class="flex flex-wrap justify-center gap-1 text-xs font-sans">
+                        <span class="bg-gray-100 px-1 py-1 rounded">${item.yinYang}</span>
+                        <span class="bg-gray-100 px-1 py-1 rounded">${item.element}</span>
+                        <span class="bg-gold/20 text-yellow-800 px-1 py-1 rounded border border-gold/30">${item.zodiac}</span>
+                    </div>
+                `;
+                branchesContainer.appendChild(card);
+            });
+        }
+
+        function getBorderColor(element) {
+            switch(element) {
+                case '木': return 'border-jade';
+                case '火': return 'border-cinnabar';
+                case '土': return 'border-yellow-700';
+                case '金': return 'border-yellow-400';
+                case '水': return 'border-water';
+                default: return 'border-gray-200';
+            }
+        }
+
+        // === 互动罗盘逻辑 ===
+        let currentPalaceMode = 'basic';
+        let currentSelectedBranch = null;
+
+        function changeMode(mode) {
+            currentPalaceMode = mode;
+            if (currentSelectedBranch) {
+                handlePalaceClick(currentSelectedBranch);
+            }
+        }
+
+        function initInteractivePalace() {
+            const cells = document.querySelectorAll('.palace-cell:not(.empty)');
+            
+            cells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const branch = cell.dataset.branch;
+                    handlePalaceClick(branch);
+                });
+            });
+        }
+
+        function handlePalaceClick(selectedBranchName) {
+            currentSelectedBranch = selectedBranchName;
+            // 清除之前的状态
+            document.querySelectorAll('.palace-cell').forEach(c => {
+                c.classList.remove('cell-selected', 'cell-clash', 'cell-combo', 'cell-tri', 'cell-season');
+            });
+
+            const relation = branchRelations[selectedBranchName];
+            if(!relation) return;
+
+            // 设置选中状态
+            const targetSelected = document.querySelector(`.palace-cell[data-branch="${selectedBranchName}"]`);
+            if(targetSelected) targetSelected.classList.add('cell-selected');
+
+            // 根据模式设置相关高亮
+            if (currentPalaceMode === 'basic') {
+                const targetClash = document.querySelector(`.palace-cell[data-branch="${relation.clash}"]`);
+                const targetCombo = document.querySelector(`.palace-cell[data-branch="${relation.combo}"]`);
+                if(targetClash) targetClash.classList.add('cell-clash');
+                if(targetCombo) targetCombo.classList.add('cell-combo');
+            } else if (currentPalaceMode === 'tri') {
+                relation.tri.forEach(b => {
+                    const target = document.querySelector(`.palace-cell[data-branch="${b}"]`);
+                    if(target) target.classList.add('cell-tri');
+                });
+            } else if (currentPalaceMode === 'season') {
+                relation.season.forEach(b => {
+                    const target = document.querySelector(`.palace-cell[data-branch="${b}"]`);
+                    if(target) target.classList.add('cell-season');
+                });
+            }
+
+            // 更新右侧解析面板
+            document.getElementById('interactive-placeholder').classList.add('hidden');
+            const contentPanel = document.getElementById('interactive-content');
+            contentPanel.classList.remove('hidden');
+            
+            // 触发小动画
+            contentPanel.classList.remove('animate-fade-in');
+            void contentPanel.offsetWidth; 
+            contentPanel.classList.add('animate-fade-in');
+
+            document.getElementById('selected-branch').textContent = selectedBranchName;
+            
+            // 切换对应的内容区
+            document.getElementById('content-basic').classList.add('hidden');
+            document.getElementById('content-tri').classList.add('hidden');
+            document.getElementById('content-season').classList.add('hidden');
+
+            if (currentPalaceMode === 'basic') {
+                document.getElementById('content-basic').classList.remove('hidden');
+                document.getElementById('clash-pair').textContent = `${selectedBranchName}${relation.clash}相冲`;
+                document.getElementById('clash-desc').textContent = relation.clashDesc;
+                document.getElementById('combo-pair').textContent = `${selectedBranchName}${relation.combo}相合`;
+                document.getElementById('combo-desc').textContent = relation.comboDesc;
+            } else if (currentPalaceMode === 'tri') {
+                document.getElementById('content-tri').classList.remove('hidden');
+                document.getElementById('tri-pair').textContent = relation.triName;
+                document.getElementById('tri-desc').textContent = relation.triDesc;
+            } else if (currentPalaceMode === 'season') {
+                document.getElementById('content-season').classList.remove('hidden');
+                document.getElementById('season-pair').textContent = relation.seasonName;
+                document.getElementById('season-desc').textContent = relation.seasonDesc;
+            }
+        }
+
+        // === 随堂测验逻辑 ===
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizActive = false;
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizActive = true;
+            
+            document.getElementById('quiz-intro').classList.add('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-area').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = quizData[currentQuestionIndex];
+            document.getElementById('q-progress').textContent = `${currentQuestionIndex + 1}/${quizData.length}`;
+            document.getElementById('q-score').textContent = Math.round((score / quizData.length) * 100);
+            document.getElementById('q-text').textContent = q.question;
+            
+            const optionsContainer = document.getElementById('q-options');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-4 rounded-lg border border-gray-300 hover:border-gold hover:bg-paper transition focus:outline-none bg-white';
+                btn.textContent = `${String.fromCharCode(65 + index)}. ${opt}`;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('q-feedback').classList.add('hidden');
+            document.getElementById('q-next-btn').classList.add('hidden');
+        }
+
+        function selectOption(selectedIndex, btnElement) {
+            if (!quizActive) return; 
+            quizActive = false;
+
+            const q = quizData[currentQuestionIndex];
+            const isCorrect = (selectedIndex === q.correctIndex);
+            
+            const options = document.getElementById('q-options').children;
+            
+            for (let i = 0; i < options.length; i++) {
+                options[i].disabled = true;
+                options[i].classList.remove('hover:border-gold', 'hover:bg-paper');
+                
+                if (i === q.correctIndex) {
+                    options[i].classList.add('bg-green-100', 'border-green-500', 'text-green-800', 'font-bold');
+                } else if (i === selectedIndex && !isCorrect) {
+                    options[i].classList.add('bg-red-100', 'border-red-500', 'text-red-800');
+                } else {
+                    options[i].classList.add('opacity-50');
+                }
+            }
+
+            if (isCorrect) score++;
+            document.getElementById('q-score').textContent = Math.round((score / quizData.length) * 100);
+
+            const feedbackEl = document.getElementById('q-feedback');
+            feedbackEl.classList.remove('hidden');
+            if (isCorrect) {
+                feedbackEl.className = 'mt-6 p-4 rounded-lg text-sm font-sans bg-green-50 text-green-800 border border-green-200 block animate-fade-in';
+                feedbackEl.innerHTML = `<strong>✅ 回答正确！</strong><br><span class="text-gray-600 mt-1 block">${q.explanation}</span>`;
+            } else {
+                feedbackEl.className = 'mt-6 p-4 rounded-lg text-sm font-sans bg-red-50 text-red-800 border border-red-200 block animate-fade-in';
+                feedbackEl.innerHTML = `<strong>❌ 回答错误。</strong><br><span class="text-gray-600 mt-1 block">${q.explanation}</span>`;
+            }
+
+            const nextBtn = document.getElementById('q-next-btn');
+            nextBtn.classList.remove('hidden');
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.textContent = '查看结果';
+            } else {
+                nextBtn.textContent = '下一题';
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                quizActive = true;
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-area').classList.add('hidden');
+            const resultEl = document.getElementById('quiz-result');
+            resultEl.classList.remove('hidden');
+            resultEl.classList.add('animate-fade-in');
+            
+            const finalScore = Math.round((score / quizData.length) * 100);
+            document.getElementById('final-score').textContent = finalScore;
+            
+            let msg = '';
+            if (finalScore === 100) msg = "太棒了！你已经完全掌握了基础的冲合知识，具备了极高的慧根！";
+            else if (finalScore >= 60) msg = "表现不错！基本掌握了核心概念，多使用互动罗盘可以加深记忆。";
+            else msg = "还需要再接再厉哦！建议返回【十二地支互动罗盘】多加练习。";
+            
+            document.getElementById('result-message').textContent = msg;
+        }
+
+    </script>
+</body>
+</html>

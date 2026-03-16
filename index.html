@@ -1,9 +1,9 @@
-
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>子南阁 - 中医古典理论可视化工具集</title>
+    <title>子南阁 - 中医与易学可视化推演工具集</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入中文字体 -->
@@ -19,26 +19,41 @@
             flex-direction: column;
         }
 
-        /* 标题印章效果 */
+        /* --- 标题印章效果 (精装版) --- */
+        .stamp-container {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
         .stamp {
             display: inline-block;
-            color: #b91c1c; /* 印泥红 */
-            border: 4px solid #b91c1c;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            color: #c9181a; /* 纯正印泥红 */
+            background-color: transparent;
+            border: 2px solid #c9181a; /* 内层细框 */
+            padding: 0.8rem 2.5rem;
+            font-family: 'STKaiti', 'KaiTi', '楷体', 'Noto Serif SC', serif; 
             font-weight: 900;
-            letter-spacing: 0.2em;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
-            box-shadow: inset 0 0 5px rgba(185, 28, 28, 0.2);
+            letter-spacing: 0.4em;
+            text-indent: 0.4em; 
             position: relative;
+            transform: rotate(-2deg); /* 微微倾斜 */
+            box-shadow: 
+                0 0 0 5px #f5f3eb, /* 隔离层 */
+                0 0 0 9px #c9181a, /* 外层粗框 */
+                8px 10px 20px rgba(185, 28, 28, 0.15); /* 整体阴影 */
+            border-radius: 4px;
+            z-index: 10;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.6);
         }
         
         .stamp::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
+            top: -9px; left: -9px; right: -9px; bottom: -9px; 
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
             pointer-events: none;
+            border-radius: 4px;
+            mix-blend-mode: multiply;
         }
 
         /* 卡片悬浮动画 */
@@ -46,6 +61,9 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         .tool-card::before {
             content: '';
@@ -55,11 +73,12 @@
             transition: background-color 0.4s;
         }
         .tool-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-6px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            background-color: #ffffff;
         }
         .tool-card:hover::before {
-            background-color: #92400e; /* 悬浮时左侧出现褐色强调线 */
+            background-color: #92400e; /* 悬浮强调线 */
         }
         
         .cloud-bg {
@@ -71,49 +90,115 @@
 <body class="cloud-bg antialiased">
 
     <!-- 顶部导航/标志 -->
-    <header class="w-full pt-16 pb-12 text-center px-4">
-        <div class="stamp text-4xl md:text-5xl mb-6">子南阁</div>
-        <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-3 tracking-widest">中医古典理论可视化推演</h1>
+    <header class="w-full pt-16 pb-12 text-center px-4 relative">
+        <div class="stamp-container">
+            <div class="stamp text-5xl md:text-6xl">子南阁</div>
+        </div>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-3 tracking-widest mt-2">中医与易学可视化推演集</h1>
         <p class="text-gray-600 max-w-2xl mx-auto text-sm md:text-base">
-            借现代技术之笔，绘古典中医之魂。在这里探索五运六气、子午流注与阴阳五行的奥秘。
+            借现代技术之笔，绘古典医学与易理之魂。探索五运六气、天干地支、排盘术数与女性健康的奥秘。
         </p>
     </header>
 
     <!-- 工具列表主体区 -->
-    <main class="flex-grow container mx-auto px-4 max-w-5xl mb-16">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <main class="flex-grow container mx-auto px-4 max-w-6xl mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             
-            <!-- 工具一：五脏十二长生 -->
-            <a href="./五脏十二长生.html" class="tool-card block bg-white/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-amber-100">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-2xl font-bold text-amber-900">五脏十二长生图</h2>
-                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">子午流注</span>
+            <!-- 工具：五脏十二长生 -->
+            <a href="./五脏十二长生.html" class="tool-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-100">
+                <div class="flex items-start justify-between mb-3">
+                    <h2 class="text-xl font-bold text-amber-900 leading-tight">五脏十二长生图</h2>
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-200 shrink-0">中医基础</span>
                 </div>
-                <p class="text-gray-600 mb-6 leading-relaxed text-sm md:text-base">
-                    结合中医子午流注与五行理论，动态展示人体五脏气机（肝心脾肺肾）在一天十二时辰中的起伏变化（长生、沐浴、冠带至胎养的过程），并提供相应的日常调养建议。
+                <p class="text-gray-600 mb-5 leading-relaxed text-sm flex-grow">
+                    结合中医子午流注与五行理论，动态展示人体五脏气机在一天十二时辰中的起伏变化（长生至胎养的过程），提供调养建议。
                 </p>
-                <div class="flex items-center text-amber-700 font-semibold text-sm group">
-                    进入推演 
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                <div class="flex items-center text-amber-700 font-semibold text-sm group mt-auto">
+                    进入推演 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </div>
             </a>
 
-            <!-- 工具二：后天八卦与中土五行 -->
-            <a href="./中土五行与后天八卦方位全息推演.html" class="tool-card block bg-white/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-amber-100">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-2xl font-bold text-amber-900">中土五行全息推演</h2>
-                    <span class="bg-red-50 text-red-800 text-xs font-bold px-3 py-1 rounded-full border border-red-200">脏腑病机</span>
+            <!-- 工具：中土五行全息推演 -->
+            <a href="./中土五行与后天八卦方位全息推演.html" class="tool-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-100">
+                <div class="flex items-start justify-between mb-3">
+                    <h2 class="text-xl font-bold text-amber-900 leading-tight">中土五行全息推演</h2>
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-200 shrink-0">中医基础</span>
                 </div>
-                <p class="text-gray-600 mb-6 leading-relaxed text-sm md:text-base">
-                    基于后天八卦方位，动态演示春夏秋冬四季更迭下，“中土系统”对四方脏腑（心肝肺肾）的“体用虚实”转化。直观解析五行生克制化与脏腑病机变化。
+                <p class="text-gray-600 mb-5 leading-relaxed text-sm flex-grow">
+                    基于后天八卦方位，动态演示春夏秋冬四季更迭下，“中土系统”对四方脏腑的“体用虚实”转化。直观解析五行生克病机。
                 </p>
-                <div class="flex items-center text-amber-700 font-semibold text-sm group">
-                    进入推演 
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                <div class="flex items-center text-amber-700 font-semibold text-sm group mt-auto">
+                    进入推演 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </div>
+            </a>
+
+            <!-- 工具：性激素与中医解码 -->
+            <a href="./性激素与中医解码交互演示.html" class="tool-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-100">
+                <div class="flex items-start justify-between mb-3">
+                    <h2 class="text-xl font-bold text-amber-900 leading-tight">性激素中医解码</h2>
+                    <span class="bg-teal-50 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full border border-teal-200 shrink-0">中西汇通</span>
+                </div>
+                <p class="text-gray-600 mb-5 leading-relaxed text-sm flex-grow">
+                    将现代医学的性激素六项，代入中医“肾-天癸-冲任”生殖轴。包含激素翻转卡片、周期动态时间轴与多囊等四大妇科病机解码。
+                </p>
+                <div class="flex items-center text-amber-700 font-semibold text-sm group mt-auto">
+                    进入推演 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </div>
+            </a>
+
+            <!-- 工具：大六壬动态教学系统 -->
+            <a href="./大六壬动态教学系统.html" class="tool-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-100">
+                <div class="flex items-start justify-between mb-3">
+                    <h2 class="text-xl font-bold text-amber-900 leading-tight">大六壬动态教学</h2>
+                    <span class="bg-red-50 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200 shrink-0">术数排盘</span>
+                </div>
+                <p class="text-gray-600 mb-5 leading-relaxed text-sm flex-grow">
+                    大六壬九宗门核心推演教学。输入干支时将，动态生成天地盘、四课、三传，并提供详细的起课发用原理长文解析。
+                </p>
+                <div class="flex items-center text-amber-700 font-semibold text-sm group mt-auto">
+                    进入推演 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </div>
+            </a>
+
+            <!-- 工具：四柱八字计算教学 -->
+            <a href="./四柱八字（干支）计算教学系统.html" class="tool-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-100">
+                <div class="flex items-start justify-between mb-3">
+                    <h2 class="text-xl font-bold text-amber-900 leading-tight">四柱八字计算教学</h2>
+                    <span class="bg-red-50 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200 shrink-0">命理基础</span>
+                </div>
+                <p class="text-gray-600 mb-5 leading-relaxed text-sm flex-grow">
+                    掌握“年、月、日、时”干支历法的推算原理。内含五虎遁、五鼠遁的实战演算，以及一键四柱排盘测试工具。
+                </p>
+                <div class="flex items-center text-amber-700 font-semibold text-sm group mt-auto">
+                    进入推演 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </div>
+            </a>
+
+            <!-- 工具：天干地支相冲相合 -->
+            <a href="./天干地支相冲相合.html" class="tool-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-100">
+                <div class="flex items-start justify-between mb-3">
+                    <h2 class="text-xl font-bold text-amber-900 leading-tight">干支冲合掌诀罗盘</h2>
+                    <span class="bg-red-50 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200 shrink-0">命理基础</span>
+                </div>
+                <p class="text-gray-600 mb-5 leading-relaxed text-sm flex-grow">
+                    十二地支掌诀互动罗盘。点击地支即可高亮显示与之对应的六冲、六合、三合局及三会方，内置随堂测验检验学习成果。
+                </p>
+                <div class="flex items-center text-amber-700 font-semibold text-sm group mt-auto">
+                    进入推演 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </div>
+            </a>
+
+            <!-- 工具：二十四节气记忆与练习系统 -->
+            <a href="./二十四节气记忆与练习系统.html" class="tool-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-100">
+                <div class="flex items-start justify-between mb-3">
+                    <h2 class="text-xl font-bold text-amber-900 leading-tight">二十四节气记忆系统</h2>
+                    <span class="bg-blue-50 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-200 shrink-0">历法基础</span>
+                </div>
+                <p class="text-gray-600 mb-5 leading-relaxed text-sm flex-grow">
+                    形成条件反射，看日期知节气。内置《节气歌》速记口诀，并通过公历日期随机出题，训练节气直觉反应能力。
+                </p>
+                <div class="flex items-center text-amber-700 font-semibold text-sm group mt-auto">
+                    进入推演 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </div>
             </a>
 
@@ -123,7 +208,7 @@
     <!-- 底部版权 -->
     <footer class="text-center py-8 text-gray-500 text-sm border-t border-gray-200/50 mt-auto bg-white/30">
         <p>Copyright © 子南阁 - Jason张医生所有. 严禁未授权转载.</p>
-        <p class="mt-1 text-xs opacity-75">Designed for Traditional Chinese Medicine Visualization</p>
+        <p class="mt-1 text-xs opacity-75">Traditional Chinese Medicine & I Ching Visualization Tools</p>
     </footer>
 
 </body>

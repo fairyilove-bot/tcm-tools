@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性激素与中医解码交互演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 翻转卡片动画与样式 */
+        .perspective { perspective: 1000px; }
+        .flip-card-inner {
+            position: relative; width: 100%; height: 100%;
+            transition: transform 0.6s; transform-style: preserve-3d;
+        }
+        .flip-card.active .flip-card-inner, .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; border-radius: 1rem;
+        }
+        .flip-card-back { transform: rotateY(180deg); }
+        
+        /* 隐藏滚动条 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 渐变背景 */
+        .bg-gradient-custom { background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); }
+        .bg-gradient-timeline { background: linear-gradient(to right, #f8fafc, #f1f5f9); }
+
+        /* 动画 */
+        .timeline-node { transition: all 0.3s ease; }
+        .timeline-node.active { transform: scale(1.2); }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 自定义滚动条 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px;}
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
+
+    <!-- 头部区域 -->
+    <header class="bg-teal-700 text-white py-12 px-6 shadow-md relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full"><path d="M0,50 Q25,25 50,50 T100,50 L100,100 L0,100 Z" fill="currentColor"/></svg>
+        </div>
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4 tracking-tight">性激素与中医理论解码</h1>
+            <p class="text-teal-100 text-lg md:text-xl max-w-3xl mx-auto">
+                将现代医学的性激素六项，代入中医“肾-天癸-冲任-胞宫”生殖轴，顺应周期节律，用阴阳气血的视角重新理解女性健康。
+            </p>
+        </div>
+    </header>
+
+    <!-- 模块一：激素六项翻转卡片 -->
+    <section class="py-12 px-6 max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-2xl md:text-3xl font-bold text-teal-800 flex items-center justify-center gap-2">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                核心物质：性激素六项的中西医映射
+            </h2>
+            <p class="text-slate-500 mt-2">点击或将鼠标悬停在卡片上，翻转查看中医视角的深度解析</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- E2 -->
+            <div class="flip-card perspective h-72 cursor-pointer" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner shadow-lg rounded-2xl">
+                    <div class="flip-card-front bg-white p-6 flex flex-col items-center justify-center border-t-4 border-pink-400">
+                        <span class="text-pink-500 font-bold text-4xl mb-2">E2</span>
+                        <h3 class="text-xl font-bold mb-2">雌激素</h3>
+                        <p class="text-center text-slate-500 text-sm">长内膜，促卵泡成熟<br>维持女性第二性征</p>
+                        <div class="mt-6 text-pink-400 animate-bounce"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-3 3m0 0l-3-3m3 3V9m0-5h.01"></path></svg></div>
+                    </div>
+                    <div class="flip-card-back bg-pink-50 p-6 flex flex-col justify-center border border-pink-200">
+                        <h4 class="text-pink-700 font-bold text-lg border-b border-pink-200 pb-2 mb-3">中医：肾阴与肝血</h4>
+                        <p class="text-sm text-slate-700 mb-2"><b>生理基础：</b>滋润、充养胞宫的物质基础，月经前半段阴血渐充。</p>
+                        <p class="text-sm text-slate-700"><b>病理表现：</b>若不足即为<span class="text-pink-600 font-semibold">肝肾阴虚</span>（经量少、干涩、潮热）；过高则易生瘀滞。</p>
+                    </div>
+                </div>
+            </div>
+            <!-- P -->
+            <div class="flip-card perspective h-72 cursor-pointer" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner shadow-lg rounded-2xl">
+                    <div class="flip-card-front bg-white p-6 flex flex-col items-center justify-center border-t-4 border-orange-400">
+                        <span class="text-orange-500 font-bold text-4xl mb-2">P</span>
+                        <h3 class="text-xl font-bold mb-2">孕激素</h3>
+                        <p class="text-center text-slate-500 text-sm">升体温，稳内膜，保胎<br>为受精卵着床做准备</p>
+                        <div class="mt-6 text-orange-400 animate-bounce"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-3 3m0 0l-3-3m3 3V9m0-5h.01"></path></svg></div>
+                    </div>
+                    <div class="flip-card-back bg-orange-50 p-6 flex flex-col justify-center border border-orange-200">
+                        <h4 class="text-orange-700 font-bold text-lg border-b border-orange-200 pb-2 mb-3">中医：肾阳与脾气</h4>
+                        <p class="text-sm text-slate-700 mb-2"><b>生理基础：</b>体温升高是“肾阳”温煦；稳固对抗雌激素是“脾气”固摄统血。</p>
+                        <p class="text-sm text-slate-700"><b>病理表现：</b>若不足即为<span class="text-orange-600 font-semibold">脾肾阳虚</span>（内膜不稳、经前漏血、易流产）。</p>
+                    </div>
+                </div>
+            </div>
+            <!-- FSH -->
+            <div class="flip-card perspective h-72 cursor-pointer" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner shadow-lg rounded-2xl">
+                    <div class="flip-card-front bg-white p-6 flex flex-col items-center justify-center border-t-4 border-blue-400">
+                        <span class="text-blue-500 font-bold text-4xl mb-2">FSH</span>
+                        <h3 class="text-xl font-bold mb-2">促卵泡生成素</h3>
+                        <p class="text-center text-slate-500 text-sm">刺激卵巢卵泡发育<br>评估卵巢储备的关键</p>
+                        <div class="mt-6 text-blue-400 animate-bounce"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-3 3m0 0l-3-3m3 3V9m0-5h.01"></path></svg></div>
+                    </div>
+                    <div class="flip-card-back bg-blue-50 p-6 flex flex-col justify-center border border-blue-200">
+                        <h4 class="text-blue-700 font-bold text-lg border-b border-blue-200 pb-2 mb-3">中医：肾精与肾气</h4>
+                        <p class="text-sm text-slate-700 mb-2"><b>生理基础：</b>“肾精”化生天癸，“肾气”推动卵泡生长的生殖原动力。</p>
+                        <p class="text-sm text-slate-700"><b>病理表现：</b>异常升高即为<span class="text-blue-600 font-semibold">肾精亏虚、虚火上炎</span>，底子空虚。</p>
+                    </div>
+                </div>
+            </div>
+            <!-- LH -->
+            <div class="flip-card perspective h-72 cursor-pointer" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner shadow-lg rounded-2xl">
+                    <div class="flip-card-front bg-white p-6 flex flex-col items-center justify-center border-t-4 border-purple-400">
+                        <span class="text-purple-500 font-bold text-4xl mb-2">LH</span>
+                        <h3 class="text-xl font-bold mb-2">促黄体生成素</h3>
+                        <p class="text-center text-slate-500 text-sm">排卵前的关键高峰<br>诱发排卵，促黄体形成</p>
+                        <div class="mt-6 text-purple-400 animate-bounce"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-3 3m0 0l-3-3m3 3V9m0-5h.01"></path></svg></div>
+                    </div>
+                    <div class="flip-card-back bg-purple-50 p-6 flex flex-col justify-center border border-purple-200">
+                        <h4 class="text-purple-700 font-bold text-lg border-b border-purple-200 pb-2 mb-3">中医：重阴必阳的枢纽</h4>
+                        <p class="text-sm text-slate-700 mb-2"><b>生理基础：</b>心气下达、肾阳鼓动，触发阴阳转化的瞬间（排卵）。</p>
+                        <p class="text-sm text-slate-700"><b>病理表现：</b>排卵障碍多为<span class="text-purple-600 font-semibold">心肾不交或气滞血瘀</span>，扳机扣不动。</p>
+                    </div>
+                </div>
+            </div>
+            <!-- T -->
+            <div class="flip-card perspective h-72 cursor-pointer" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner shadow-lg rounded-2xl">
+                    <div class="flip-card-front bg-white p-6 flex flex-col items-center justify-center border-t-4 border-red-400">
+                        <span class="text-red-500 font-bold text-4xl mb-2">T</span>
+                        <h3 class="text-xl font-bold mb-2">雄激素</h3>
+                        <p class="text-center text-slate-500 text-sm">提供精力与肌肉力量<br>过高会导致痤疮多毛</p>
+                        <div class="mt-6 text-red-400 animate-bounce"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-3 3m0 0l-3-3m3 3V9m0-5h.01"></path></svg></div>
+                    </div>
+                    <div class="flip-card-back bg-red-50 p-6 flex flex-col justify-center border border-red-200">
+                        <h4 class="text-red-700 font-bold text-lg border-b border-red-200 pb-2 mb-3">中医：命门火与相火</h4>
+                        <p class="text-sm text-slate-700 mb-2"><b>生理基础：</b>正常为“命门之火”，给人活力与生机。</p>
+                        <p class="text-sm text-slate-700"><b>病理表现：</b>过高为病理性“邪火”，即<span class="text-red-600 font-semibold">相火妄动、肝经郁热</span>。</p>
+                    </div>
+                </div>
+            </div>
+            <!-- PRL -->
+            <div class="flip-card perspective h-72 cursor-pointer" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner shadow-lg rounded-2xl">
+                    <div class="flip-card-front bg-white p-6 flex flex-col items-center justify-center border-t-4 border-emerald-400">
+                        <span class="text-emerald-500 font-bold text-4xl mb-2">PRL</span>
+                        <h3 class="text-xl font-bold mb-2">泌乳素</h3>
+                        <p class="text-center text-slate-500 text-sm">促进乳汁分泌<br>非哺乳期过高抑制排卵</p>
+                        <div class="mt-6 text-emerald-400 animate-bounce"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-3 3m0 0l-3-3m3 3V9m0-5h.01"></path></svg></div>
+                    </div>
+                    <div class="flip-card-back bg-emerald-50 p-6 flex flex-col justify-center border border-emerald-200">
+                        <h4 class="text-emerald-700 font-bold text-lg border-b border-emerald-200 pb-2 mb-3">中医：肝气与脾胃</h4>
+                        <p class="text-sm text-slate-700 mb-2"><b>生理基础：</b>由脾胃气血化生，其分泌受“肝气”疏泄控制。</p>
+                        <p class="text-sm text-slate-700"><b>病理表现：</b>高泌乳素血症核心为<span class="text-emerald-600 font-semibold">肝气郁结</span>，横逆犯脾。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 模块二：月经周期动态时间轴 -->
+    <section class="py-12 px-6 border-t border-slate-200 bg-gradient-timeline">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-indigo-900 flex items-center justify-center gap-2">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    时间节律：月经周期的双向演变
+                </h2>
+                <p class="text-slate-600 mt-2">点击下方周期的不同阶段，观察激素起伏与中医气血阴阳的动态转换</p>
+            </div>
+
+            <div class="relative w-full max-w-4xl mx-auto mb-10 px-4 md:px-0">
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -translate-y-1/2 rounded z-0 hidden md:block"></div>
+                <div class="absolute left-6 top-0 h-full w-1 bg-slate-200 z-0 block md:hidden"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0">
+                    <!-- 节点 1 -->
+                    <div class="flex md:flex-col items-center gap-4 md:gap-2 cursor-pointer group w-full md:w-auto" onclick="showPhase('phase-1')">
+                        <div id="node-phase-1" class="timeline-node active w-12 h-12 md:w-16 md:h-16 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold shadow-lg border-4 border-rose-200">血</div>
+                        <div class="text-left md:text-center">
+                            <div class="font-bold text-rose-700">月经期</div>
+                            <div class="text-xs text-slate-500">Day 1-5</div>
+                        </div>
+                    </div>
+                    <!-- 节点 2 -->
+                    <div class="flex md:flex-col items-center gap-4 md:gap-2 cursor-pointer group w-full md:w-auto" onclick="showPhase('phase-2')">
+                        <div id="node-phase-2" class="timeline-node w-12 h-12 md:w-16 md:h-16 rounded-full bg-pink-400 text-white flex items-center justify-center font-bold shadow-md border-4 border-white group-hover:border-pink-200">阴</div>
+                        <div class="text-left md:text-center">
+                            <div class="font-bold text-pink-700">卵泡期</div>
+                            <div class="text-xs text-slate-500">Day 6-13</div>
+                        </div>
+                    </div>
+                    <!-- 节点 3 -->
+                    <div class="flex md:flex-col items-center gap-4 md:gap-2 cursor-pointer group w-full md:w-auto" onclick="showPhase('phase-3')">
+                        <div id="node-phase-3" class="timeline-node w-12 h-12 md:w-16 md:h-16 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold shadow-md border-4 border-white group-hover:border-purple-200">枢</div>
+                        <div class="text-left md:text-center">
+                            <div class="font-bold text-purple-700">排卵期</div>
+                            <div class="text-xs text-slate-500">Day 14</div>
+                        </div>
+                    </div>
+                    <!-- 节点 4 -->
+                    <div class="flex md:flex-col items-center gap-4 md:gap-2 cursor-pointer group w-full md:w-auto" onclick="showPhase('phase-4')">
+                        <div id="node-phase-4" class="timeline-node w-12 h-12 md:w-16 md:h-16 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold shadow-md border-4 border-white group-hover:border-orange-200">阳</div>
+                        <div class="text-left md:text-center">
+                            <div class="font-bold text-orange-700">黄体期</div>
+                            <div class="text-xs text-slate-500">Day 15-28</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时间轴内容详情展示区 -->
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden min-h-[300px] relative">
+                <!-- 阶段 1 -->
+                <div id="content-phase-1" class="phase-content block p-8 fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <h3 class="text-2xl font-bold text-rose-600">月经期 (行经期)</h3>
+                        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold">推旧生新</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-slate-500">激素变化</div>
+                            <p class="text-slate-700 mt-2">雌激素 (E2) 和 孕激素 (P) 均处于整个周期的<b>最低谷</b>。激素撤退导致子宫内膜失去支撑，剥脱出血。</p>
+                        </div>
+                        <div class="bg-rose-50 p-5 rounded-xl border border-rose-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-rose-600">中医气血</div>
+                            <p class="text-slate-700 mt-2">阳气转化为阴气，气血下行汇聚于胞宫。此时以<b>“通”</b>为顺，旧血排空，新血才能生化。</p>
+                            <p class="text-rose-700 font-bold mt-3">🩺 调治原则：理气活血，重在排瘀。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 阶段 2 -->
+                <div id="content-phase-2" class="phase-content hidden p-8 fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <h3 class="text-2xl font-bold text-pink-600">卵泡期 (经后期)</h3>
+                        <span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-bold">阴血渐充</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-slate-500">激素变化</div>
+                            <p class="text-slate-700 mt-2">FSH 轻微上升刺激卵泡发育；随着卵泡长大，<b>雌激素 (E2) 稳步升高</b>，促使子宫内膜重新生长增厚。</p>
+                        </div>
+                        <div class="bg-pink-50 p-5 rounded-xl border border-pink-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-pink-600">中医气血</div>
+                            <p class="text-slate-700 mt-2">经血排出后，子宫相对空虚。此时体内<b>阴血渐充，肾阴逐渐旺盛</b>，为下一次排卵积累“物质基础”。</p>
+                            <p class="text-pink-700 font-bold mt-3">🩺 调治原则：滋补肝肾，养血填精。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 阶段 3 -->
+                <div id="content-phase-3" class="phase-content hidden p-8 fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <h3 class="text-2xl font-bold text-purple-600">排卵期 (经间期)</h3>
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">重阴必阳</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-slate-500">激素变化</div>
+                            <p class="text-slate-700 mt-2">雌激素 (E2) 达到极高值，正反馈触发 <b>LH 激增形成峰值</b>，诱发卵泡破裂排卵。</p>
+                        </div>
+                        <div class="bg-purple-50 p-5 rounded-xl border border-purple-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-purple-600">中医气血</div>
+                            <p class="text-slate-700 mt-2">阴气积累到极点瞬间产生质变，即<b>“重阴必阳”</b>。心肾相交，阳气萌动，这是阴阳交替转化的枢纽。</p>
+                            <p class="text-purple-700 font-bold mt-3">🩺 调治原则：温肾和血，促发排卵。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 阶段 4 -->
+                <div id="content-phase-4" class="phase-content hidden p-8 fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <h3 class="text-2xl font-bold text-orange-600">黄体期 (经前期)</h3>
+                        <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">阳气最盛</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-slate-500">激素变化</div>
+                            <p class="text-slate-700 mt-2">排卵后形成黄体，<b>孕激素 (P) 大量分泌并占据主导</b>，基础体温升高；联合雌激素维持内膜稳定。</p>
+                        </div>
+                        <div class="bg-orange-50 p-5 rounded-xl border border-orange-200 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-sm font-bold text-orange-600">中医气血</div>
+                            <p class="text-slate-700 mt-2">整个周期中<b>肾阳最旺盛</b>的时期。阳气负责温煦胞宫，同时脾气发挥“固摄”作用，为受精卵着床做准备。</p>
+                            <p class="text-orange-700 font-bold mt-3">🩺 调治原则：温阳健脾，疏肝理气。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 模块三：四大妇科问题解码 (新增内膜增厚) -->
+    <section class="bg-gradient-custom py-16 px-6 border-t border-teal-100">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl md:text-3xl font-bold text-teal-900 flex items-center justify-center gap-2">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    病理演变：妇科常见问题的双向解码
+                </h2>
+                <p class="text-slate-600 mt-2">当周期节律与激素平衡被打破时，看看中西医是如何分别干预的</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col lg:flex-row min-h-[450px]">
+                <!-- 侧边栏/顶部选项卡 -->
+                <div class="w-full lg:w-1/3 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-row lg:flex-col overflow-x-auto no-scrollbar">
+                    <button onclick="switchTab('pcos')" id="tab-pcos" class="tab-btn active-tab flex-1 lg:flex-none text-left px-5 py-5 text-base md:text-lg font-bold border-l-4 border-transparent focus:outline-none transition-colors whitespace-nowrap">
+                        1. 多囊卵巢综合征 (PCOS)
+                    </button>
+                    <button onclick="switchTab('lpd')" id="tab-lpd" class="tab-btn flex-1 lg:flex-none text-left px-5 py-5 text-base md:text-lg font-bold border-l-4 border-transparent text-slate-500 hover:bg-slate-100 focus:outline-none transition-colors whitespace-nowrap">
+                        2. 黄体功能不足 (LPD)
+                    </button>
+                    <button onclick="switchTab('pms')" id="tab-pms" class="tab-btn flex-1 lg:flex-none text-left px-5 py-5 text-base md:text-lg font-bold border-l-4 border-transparent text-slate-500 hover:bg-slate-100 focus:outline-none transition-colors whitespace-nowrap">
+                        3. 经前综合征 (PMS)
+                    </button>
+                    <!-- 新增：子宫内膜增厚 -->
+                    <button onclick="switchTab('eh')" id="tab-eh" class="tab-btn flex-1 lg:flex-none text-left px-5 py-5 text-base md:text-lg font-bold border-l-4 border-transparent text-slate-500 hover:bg-slate-100 focus:outline-none transition-colors whitespace-nowrap">
+                        4. 子宫内膜增生/增厚
+                    </button>
+                </div>
+
+                <!-- 内容区域 -->
+                <div class="w-full lg:w-2/3 p-6 md:p-10 relative">
+                    <!-- PCOS 内容 -->
+                    <div id="content-pcos" class="tab-content block fade-in">
+                        <div class="flex items-center gap-3 mb-6 flex-wrap">
+                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-bold">雄激素高</span>
+                            <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">排卵障碍</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-slate-500 font-bold mb-2">📊 西医视角</h4>
+                                <p class="text-slate-700">核心特征是<b>雄激素(T)偏高</b>，或LH/FSH比值失调。卵泡多但长不大、排不出。常伴有胰岛素抵抗和肥胖。</p>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-xl border-l-4 border-red-400">
+                                <h4 class="text-red-800 font-bold mb-2">☯️ 中医解码</h4>
+                                <ul class="list-disc list-inside text-red-900 space-y-1">
+                                    <li><b>雄激素高：</b>相火妄动 / 肝经郁热（表现为长痘、多毛、脾气急躁）。</li>
+                                    <li><b>无LH峰排卵：</b>肾虚底子不足 + 痰湿阻滞。痰湿像厚壳包裹卵巢，导致阴阳转换的“扳机”扣不动。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-teal-700 font-bold mb-2">🌿 中医调理比喻：【疏通河道、清理淤泥】</h4>
+                                <p class="text-slate-700"><b>思路：补肾化痰，清热平肝。</b>用健脾化痰药（苍术、茯苓）剥除卵巢表面的“痰湿”；用滋阴降火药压制相火；排卵期加活血化瘀药助推排卵。</p>
+                            </div>
+                            <!-- 新增：用药方案按钮 -->
+                            <button onclick="openDrugModal('pcos')" class="mt-4 inline-flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-teal-700 transition-all shadow-md hover:shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                查看各期常用药物与方案
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LPD 内容 -->
+                    <div id="content-lpd" class="tab-content hidden fade-in">
+                        <div class="flex items-center gap-3 mb-6 flex-wrap">
+                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold">孕酮偏低</span>
+                            <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-bold">内膜不稳</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-slate-500 font-bold mb-2">📊 西医视角</h4>
+                                <p class="text-slate-700">排卵后黄体发育不良，导致<b>孕激素(P)分泌不足</b>。表现为基础体温上升慢、高温期短、经前漏血，或孕早期极易流产。</p>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-xl border-l-4 border-orange-400">
+                                <h4 class="text-orange-800 font-bold mb-2">☯️ 中医解码</h4>
+                                <ul class="list-disc list-inside text-orange-900 space-y-1">
+                                    <li><b>孕酮低：</b>脾肾阳虚，气不摄血。黄体期本应是“阳气最盛”之时。</li>
+                                    <li><b>病机：</b>“肾阳”不足体温不升；“脾气”虚弱统摄不住血液，导致内膜提前剥脱。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-teal-700 font-bold mb-2">🌿 中医调理比喻：【添柴加火、加固堤坝】</h4>
+                                <p class="text-slate-700"><b>思路：温补脾肾，固摄冲任。</b>此时不仅不用清热疏肝，还要大量使用温热、固涩之药（如菟丝子、杜仲补肾阳；黄芪补脾气），自身托起阳气产生孕激素。</p>
+                            </div>
+                            <!-- 新增：用药方案按钮 -->
+                            <button onclick="openDrugModal('lpd')" class="mt-4 inline-flex items-center gap-2 bg-orange-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-orange-700 transition-all shadow-md hover:shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                查看各期常用药物与方案
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PMS 内容 -->
+                    <div id="content-pms" class="tab-content hidden fade-in">
+                        <div class="flex items-center gap-3 mb-6 flex-wrap">
+                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">激素波动</span>
+                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">泌乳素偏高</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-slate-500 font-bold mb-2">📊 西医视角</h4>
+                                <p class="text-slate-700">经前雌、孕激素急剧波动，或伴轻度<b>泌乳素(PRL)升高</b>，影响神经递质。表现为经前乳房胀痛、情绪暴躁、腹胀等。</p>
+                            </div>
+                            <div class="bg-emerald-50 p-4 rounded-xl border-l-4 border-emerald-400">
+                                <h4 class="text-emerald-800 font-bold mb-2">☯️ 中医解码</h4>
+                                <ul class="list-disc list-inside text-emerald-900 space-y-1">
+                                    <li><b>波动/泌乳素偏高：</b>肝失疏泄，气机郁滞。</li>
+                                    <li><b>病机：</b>经前气血向下汇聚胞宫，导致上半身空虚且“肝气”容易拥堵。堵在乳房则胀痛，堵在头部则头痛，堵在脾胃则腹胀。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-teal-700 font-bold mb-2">🌿 中医调理比喻：【调节交通、疏散拥堵】</h4>
+                                <p class="text-slate-700"><b>思路：疏肝解郁，柔肝养血。</b>代表方“逍遥散”。柴胡理顺郁结肝气，当归、白芍补充肝血柔和肝脏。交通顺畅，情绪与胀痛自然缓解。</p>
+                            </div>
+                            <!-- 新增：用药方案按钮 -->
+                            <button onclick="openDrugModal('pms')" class="mt-4 inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                查看各期常用药物与方案
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 【新增】内膜增厚 内容 -->
+                    <div id="content-eh" class="tab-content hidden fade-in">
+                        <div class="flex items-center gap-3 mb-6 flex-wrap">
+                            <span class="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-sm font-bold">雌激素无对抗</span>
+                            <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold">异常出血 (崩漏)</span>
+                            <span class="bg-red-200 text-red-900 px-3 py-1 rounded-full text-sm font-bold">瘀血阻滞</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-slate-500 font-bold mb-2">📊 西医视角</h4>
+                                <p class="text-slate-700">通常因为无排卵，导致<b>单一雌激素(E2)长期刺激</b>子宫内膜，而<b>缺乏孕激素(P)的对抗和转化</b>。内膜异常增厚，脆弱剥脱，导致月经量过大、经期延长或不规则大出血（且有癌变风险）。</p>
+                            </div>
+                            <div class="bg-rose-50 p-4 rounded-xl border-l-4 border-rose-500">
+                                <h4 class="text-rose-900 font-bold mb-2">☯️ 中医解码</h4>
+                                <ul class="list-disc list-inside text-rose-900 space-y-1">
+                                    <li><b>雌多孕少：</b>阴长而无阳化。即“物质”（阴/内膜）疯狂堆积，缺乏“阳气”（孕激素）的转化力量。</li>
+                                    <li><b>病机本质：</b>异常增厚的内膜在中医看来属于离经之血、病理产物，即<b>“瘀血阻滞胞宫”</b>。瘀血不去，新血不生，血不归经，故发为“崩漏”（崩为大出血，漏为滴答不尽）。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-rose-700 font-bold mb-2">🌿 中医调理比喻：【破瘀生新、固本澄源】</h4>
+                                <p class="text-slate-700"><b>思路：急则治标（化瘀止血），缓则治本（重建周期）。</b>出血严重时，需用“活血化瘀”之药（如三七、蒲黄、三棱，犹如中医的“药物刮宫”）剥落坏死内膜，并配合益气固摄药止血；血止后，通过温阳滋阴重建正常的排卵轴。</p>
+                            </div>
+                            <!-- 新增：用药方案按钮 -->
+                            <button onclick="openDrugModal('eh')" class="mt-4 inline-flex items-center gap-2 bg-rose-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-rose-700 transition-all shadow-md hover:shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                查看各期常用药物与方案
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 【新增】药物与治疗方案弹窗 (Modal) -->
+    <div id="drug-modal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDrugModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4 sm:p-6">
+            <div class="relative bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col" id="drug-modal-panel">
+                <!-- Header -->
+                <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                    <h3 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <!-- Title inserted via JS -->
+                    </h3>
+                    <button onclick="closeDrugModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none bg-slate-200 hover:bg-slate-300 rounded-full p-2 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <!-- Body -->
+                <div class="p-6 overflow-y-auto custom-scrollbar bg-white">
+                    
+                    <!-- PCOS Drugs -->
+                    <div id="drug-content-pcos" class="hidden drug-content-panel">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- 西药 -->
+                            <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+                                <h4 class="text-blue-800 font-bold mb-4 flex items-center gap-2">📊 西医对症用药 (按需组合)</h4>
+                                <ul class="space-y-4 text-slate-700 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">降雄激素</span> 
+                                        <div><b>达英-35 (复方醋酸环丙孕酮)：</b>临床最常用，抑制卵巢和肾上腺分泌雄激素。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">调糖脂</span> 
+                                        <div><b>二甲双胍：</b>改善胰岛素抵抗，降低体重，辅助降低雄激素。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">促排卵</span> 
+                                        <div><b>来曲唑 (Letrozole) / 克罗米芬：</b>针对有生育要求者，诱发排卵。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">调周期</span> 
+                                        <div><b>地屈孕酮 / 黄体酮：</b>定期诱发撤退性出血（药物刮宫），保护子宫内膜不发生病变。</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- 中药 -->
+                            <div class="bg-red-50/50 p-5 rounded-xl border border-red-100">
+                                <h4 class="text-red-800 font-bold mb-4 flex items-center gap-2">☯️ 中医人工周期疗法 (按期调治)</h4>
+                                <div class="space-y-4 text-slate-700 text-sm">
+                                    <div class="border-l-2 border-pink-400 pl-3">
+                                        <b class="text-pink-700 block mb-1">1. 卵泡期 (经后期)：</b>
+                                        <span class="text-slate-500">治法：</span>滋补肝肾，化痰软坚。<br>
+                                        <span class="text-slate-500">代表方：</span><b>苍附导痰丸</b> 合 <b>左归丸</b> 加减。剥除卵巢痰湿，促卵泡发育。
+                                    </div>
+                                    <div class="border-l-2 border-purple-400 pl-3">
+                                        <b class="text-purple-700 block mb-1">2. 排卵期 (经间期)：</b>
+                                        <span class="text-slate-500">治法：</span>活血化瘀，补肾促排。<br>
+                                        <span class="text-slate-500">代表方：</span><b>促排卵汤</b> (含丹参、赤芍、皂角刺)。助力“重阴必阳”，冲破卵泡壁。
+                                    </div>
+                                    <div class="border-l-2 border-orange-400 pl-3">
+                                        <b class="text-orange-700 block mb-1">3. 黄体期 (经前期)：</b>
+                                        <span class="text-slate-500">治法：</span>温补脾肾，扶助阳气。<br>
+                                        <span class="text-slate-500">代表方：</span><b>右归丸</b> 或 <b>毓麟珠</b>。提高黄体功能，升高基础体温。
+                                    </div>
+                                    <div class="border-l-2 border-rose-400 pl-3">
+                                        <b class="text-rose-700 block mb-1">4. 月经期 (行经期)：</b>
+                                        <span class="text-slate-500">治法：</span>活血化瘀，理气调经。<br>
+                                        <span class="text-slate-500">代表方：</span><b>桃红四物汤</b>。促使经血排净，去旧生新。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LPD Drugs -->
+                    <div id="drug-content-lpd" class="hidden drug-content-panel">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+                                <h4 class="text-blue-800 font-bold mb-4">📊 西医对症用药</h4>
+                                <ul class="space-y-4 text-slate-700 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">直接补充</span> 
+                                        <div><b>地屈孕酮 (达芙通) / 微粒化黄体酮胶囊：</b>排卵后连续使用10-14天，最直接有效补充孕激素。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">黄体支持</span> 
+                                        <div><b>hCG注射液：</b>排卵后肌肉注射，模拟LH功能，刺激自身的黄体发育并分泌孕酮。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">溯源促排</span> 
+                                        <div><b>克罗米芬 / 来曲唑：</b>遵循“好卵泡才有好黄体”原则，通过改善前端卵泡质量来提升后端的黄体功能。</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bg-orange-50/50 p-5 rounded-xl border border-orange-100">
+                                <h4 class="text-orange-800 font-bold mb-4">☯️ 中医人工周期疗法</h4>
+                                <div class="space-y-4 text-slate-700 text-sm">
+                                    <div class="border-l-2 border-orange-400 pl-3">
+                                        <b class="text-orange-700 block mb-1">重点时期：黄体期 (经前期)</b>
+                                        <span class="text-slate-500">治法：</span>温补脾肾，固摄冲任。这阶段阳虚气弱是核心病机。<br>
+                                        <span class="text-slate-500">代表方：</span><b>寿胎丸</b> (菟丝子、桑寄生、续断、阿胶) 合 <b>四君子汤</b> (党参、白术等) 或 <b>健固汤</b>。
+                                    </div>
+                                    <div class="border-l-2 border-pink-300 pl-3">
+                                        <b class="text-pink-700 block mb-1">次重点期：卵泡期 (经后期)</b>
+                                        <span class="text-slate-500">治法：</span>阴阳互根。中医讲究“善补阳者，必于阴中求阳”。卵泡期要养精血，打好物质基础。<br>
+                                        <span class="text-slate-500">代表方：</span><b>归肾丸</b> 或 <b>左归丸</b>。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PMS Drugs -->
+                    <div id="drug-content-pms" class="hidden drug-content-panel">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+                                <h4 class="text-blue-800 font-bold mb-4">📊 西医对症用药</h4>
+                                <ul class="space-y-4 text-slate-700 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">递质调节</span> 
+                                        <div><b>SSRIs (如氟西汀、舍曲林)：</b>针对严重经前期情绪暴躁、抑郁（PMDD），可周期性服用（黄体期服用）。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">缓解水肿</span> 
+                                        <div><b>螺内酯：</b>针对经前严重的腹胀、水肿、乳房胀痛，具有抗雄及利尿消肿作用。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">降泌乳素</span> 
+                                        <div><b>溴隐亭 / 卡麦角林：</b>若抽血确诊高泌乳素血症引起的经前症状。</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bg-emerald-50/50 p-5 rounded-xl border border-emerald-100">
+                                <h4 class="text-emerald-800 font-bold mb-4">☯️ 中医分期调理</h4>
+                                <div class="space-y-4 text-slate-700 text-sm">
+                                    <div class="border-l-2 border-emerald-400 pl-3">
+                                        <b class="text-emerald-700 block mb-1">重点时期：经前期 (黄体期)</b>
+                                        <span class="text-slate-500">治法：</span>疏肝解郁，理气止痛。气血下聚时疏通上半身的“交通”。<br>
+                                        <span class="text-slate-500">代表方：</span><b>逍遥散</b>。若伴有长痘、口干舌燥、脾气极其火爆等郁热症状，则用 <b>丹栀逍遥散</b>。
+                                    </div>
+                                    <div class="border-l-2 border-rose-300 pl-3">
+                                        <b class="text-rose-700 block mb-1">经期 (行经期)</b>
+                                        <span class="text-slate-500">治法：</span>活血理气，引血下行。<br>
+                                        <span class="text-slate-500">代表方：</span><b>柴胡疏肝散</b> 合 <b>四物汤</b>，引血下行，胀痛自消。
+                                    </div>
+                                    <div class="border-l-2 border-pink-300 pl-3">
+                                        <b class="text-pink-700 block mb-1">经后期 (卵泡期)</b>
+                                        <span class="text-slate-500">治法：</span>柔肝养血。肝体阴而用阳，血足了肝脏才柔和，气才不急躁。<br>
+                                        <span class="text-slate-500">代表方：</span><b>归脾汤</b> 或 <b>杞菊地黄丸</b>。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EH Drugs -->
+                    <div id="drug-content-eh" class="hidden drug-content-panel">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+                                <h4 class="text-blue-800 font-bold mb-4">📊 西医治疗方案 (对抗雌激素)</h4>
+                                <ul class="space-y-4 text-slate-700 text-sm">
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">急诊止血</span> 
+                                        <div><b>大剂量孕激素 / 诊断性刮宫：</b>急性大出血时，使用黄体酮让内膜全面脱落（药物刮宫），或直接手术清宫快速止血止损。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">周期转化</span> 
+                                        <div><b>安宫黄体酮 / 地屈孕酮：</b>每月后半周期连续服用10-14天，人为补充缺乏的孕激素，强行让内膜转化脱落，防止恶变。</div>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="bg-blue-200 text-blue-800 px-2 rounded text-xs mt-0.5 shrink-0">长期保护</span> 
+                                        <div><b>LNG-IUS (曼月乐环)：</b>置入子宫内，局部缓慢释放左炔诺孕酮，强烈抑制内膜生长，是治疗内膜增生的首选长效方案。</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bg-rose-50/50 p-5 rounded-xl border border-rose-100">
+                                <h4 class="text-rose-800 font-bold mb-4">☯️ 中医“塞流-澄源-复旧”三步法</h4>
+                                <div class="space-y-4 text-slate-700 text-sm">
+                                    <div class="border-l-2 border-red-500 pl-3">
+                                        <b class="text-red-700 block mb-1">第一步：出血期 (塞流 - 急则治标)</b>
+                                        <span class="text-slate-500">治法：</span>化瘀止血，固冲摄血。不单纯见血止血，而是“祛瘀生新”。<br>
+                                        <span class="text-slate-500">代表方：</span><b>失笑散</b> (五灵脂、蒲黄) 加三七粉，配合 <b>固本止崩汤</b>。强行剥落坏死内膜（中医药物刮宫）。
+                                    </div>
+                                    <div class="border-l-2 border-orange-400 pl-3">
+                                        <b class="text-orange-700 block mb-1">第二步：止血后 (澄源 - 寻找病因)</b>
+                                        <span class="text-slate-500">治法：</span>温补脾肾，清热或化湿（辨证论治），解决导致崩漏的根本原因，清理体内环境。
+                                    </div>
+                                    <div class="border-l-2 border-pink-400 pl-3">
+                                        <b class="text-pink-700 block mb-1">第三步：恢复期 (复旧 - 缓则治本)</b>
+                                        <span class="text-slate-500">治法：</span>重建人工周期。<br>
+                                        <span class="text-slate-500">代表方：</span>排卵期前<b>补肾填精</b> (左归丸)，排卵期后<b>温补脾肾</b> (右归丸)，恢复自体排卵与正常周期。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-slate-800 text-slate-400 py-6 text-center text-sm">
+        <p>本演示仅供健康教育与医学科普参考，不能替代专业医师的诊断与治疗。</p>
+        <p class="mt-2">请在专业中医师指导下进行辨证论治与分期调理。</p>
+    </footer>
+
+    <!-- JavaScript 交互逻辑 -->
+    <script>
+        // 时间轴逻辑
+        function showPhase(phaseId) {
+            const phases = ['phase-1', 'phase-2', 'phase-3', 'phase-4'];
+            phases.forEach(id => {
+                const node = document.getElementById(`node-${id}`);
+                node.classList.remove('active', 'border-4');
+                node.classList.add('border-4', 'border-white');
+                if(id === 'phase-1') node.classList.remove('border-rose-200');
+                if(id === 'phase-2') node.classList.remove('border-pink-200');
+                if(id === 'phase-3') node.classList.remove('border-purple-200');
+                if(id === 'phase-4') node.classList.remove('border-orange-200');
+
+                const content = document.getElementById(`content-${id}`);
+                content.classList.add('hidden');
+                content.classList.remove('block');
+            });
+
+            const activeNode = document.getElementById(`node-${phaseId}`);
+            activeNode.classList.add('active');
+            activeNode.classList.remove('border-white');
+            if(phaseId === 'phase-1') activeNode.classList.add('border-rose-200');
+            if(phaseId === 'phase-2') activeNode.classList.add('border-pink-200');
+            if(phaseId === 'phase-3') activeNode.classList.add('border-purple-200');
+            if(phaseId === 'phase-4') activeNode.classList.add('border-orange-200');
+
+            const activeContent = document.getElementById(`content-${phaseId}`);
+            activeContent.classList.remove('hidden');
+            activeContent.classList.add('block');
+        }
+
+        // 疾病选项卡逻辑 (新增内膜增厚处理)
+        function switchTab(tabId) {
+            const tabs = ['pcos', 'lpd', 'pms', 'eh'];
+            tabs.forEach(id => {
+                const content = document.getElementById(`content-${id}`);
+                content.classList.add('hidden');
+                content.classList.remove('block');
+                const btn = document.getElementById(`tab-${id}`);
+                btn.className = `tab-btn flex-1 lg:flex-none text-left px-5 py-5 text-base md:text-lg font-bold border-l-4 border-transparent text-slate-500 hover:bg-slate-100 focus:outline-none transition-colors whitespace-nowrap`;
+            });
+
+            const activeContent = document.getElementById(`content-${tabId}`);
+            activeContent.classList.remove('hidden');
+            activeContent.classList.add('block');
+            
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            let activeClass = "";
+            if(tabId === 'pcos') activeClass = "border-red-500 text-red-700 bg-red-50";
+            if(tabId === 'lpd') activeClass = "border-orange-500 text-orange-700 bg-orange-50";
+            if(tabId === 'pms') activeClass = "border-emerald-500 text-emerald-700 bg-emerald-50";
+            if(tabId === 'eh') activeClass = "border-rose-500 text-rose-800 bg-rose-50"; // 增厚：采用玫瑰红瘀血色调
+            
+            activeBtn.className = `tab-btn active-tab flex-1 lg:flex-none text-left px-5 py-5 text-base md:text-lg font-bold border-l-4 focus:outline-none transition-colors whitespace-nowrap ${activeClass}`;
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaultBtn = document.getElementById('tab-pcos');
+            defaultBtn.className = `tab-btn active-tab flex-1 lg:flex-none text-left px-5 py-5 text-base md:text-lg font-bold border-l-4 focus:outline-none transition-colors whitespace-nowrap border-red-500 text-red-700 bg-red-50`;
+        });
+
+        // ================= 弹窗逻辑 =================
+        const drugModal = document.getElementById('drug-modal');
+        const modalPanel = document.getElementById('drug-modal-panel');
+        const modalTitle = document.getElementById('modal-title');
+        
+        const diseaseTitles = {
+            'pcos': '多囊卵巢综合征 (PCOS) 常用药物与方案',
+            'lpd': '黄体功能不足 (LPD) 常用药物与方案',
+            'pms': '经前综合征 (PMS) 常用药物与方案',
+            'eh': '子宫内膜增生/增厚 常用药物与方案'
+        };
+
+        function openDrugModal(diseaseId) {
+            // 设置标题
+            modalTitle.innerHTML = `<svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            ${diseaseTitles[diseaseId]}`;
+            
+            // 隐藏所有药物内容
+            document.querySelectorAll('.drug-content-panel').forEach(panel => {
+                panel.classList.add('hidden');
+            });
+            
+            // 显示目标药物内容
+            document.getElementById(`drug-content-${diseaseId}`).classList.remove('hidden');
+            
+            // 显示弹窗动画
+            drugModal.classList.remove('hidden');
+            // 触发回流以应用动画
+            void drugModal.offsetWidth; 
+            drugModal.classList.remove('opacity-0');
+            modalPanel.classList.remove('scale-95');
+        }
+
+        function closeDrugModal() {
+            drugModal.classList.add('opacity-0');
+            modalPanel.classList.add('scale-95');
+            setTimeout(() => {
+                drugModal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>

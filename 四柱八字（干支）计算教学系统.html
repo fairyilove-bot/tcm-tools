@@ -1,0 +1,566 @@
+
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四柱八字（干支）计算教学系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #fdfaf4; /* 宣纸色 */
+            color: #332b22;
+        }
+        
+        .china-border {
+            border: 2px solid #8c2e2e; /* 经典中国红边框 */
+            padding: 2px;
+            position: relative;
+        }
+        
+        .china-border::before {
+            content: '';
+            position: absolute;
+            top: 2px; bottom: 2px; left: 2px; right: 2px;
+            border: 1px solid #8c2e2e;
+        }
+
+        .tab-btn.active {
+            background-color: #8c2e2e;
+            color: #fdfaf4;
+            border-color: #8c2e2e;
+        }
+        
+        .tab-btn {
+            background-color: transparent;
+            color: #8c2e2e;
+            border: 1px solid #8c2e2e;
+            transition: all 0.3s ease;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bazi-box {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: 0.5em;
+        }
+        
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid #d4c5b0;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        th {
+            background-color: #f2e8d5;
+            color: #8c2e2e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- 头部 -->
+        <header class="text-center mb-8 china-border bg-white shadow-md rounded-sm py-8 px-4">
+            <h1 class="text-3xl md:text-5xl font-bold text-[#8c2e2e] mb-4 tracking-widest">干支（八字）历法计算教学系统</h1>
+            <p class="text-lg text-gray-700">掌握“年、月、日、时”天干地支的推算原理</p>
+        </header>
+
+        <!-- 导航菜单 -->
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+            <button onclick="switchTab('intro')" class="tab-btn active px-4 py-2 rounded-sm text-sm md:text-base font-semibold" id="btn-intro">基础知识</button>
+            <button onclick="switchTab('year')" class="tab-btn px-4 py-2 rounded-sm text-sm md:text-base font-semibold" id="btn-year">一、排年柱</button>
+            <button onclick="switchTab('month')" class="tab-btn px-4 py-2 rounded-sm text-sm md:text-base font-semibold" id="btn-month">二、排月柱</button>
+            <button onclick="switchTab('day')" class="tab-btn px-4 py-2 rounded-sm text-sm md:text-base font-semibold" id="btn-day">三、排日柱</button>
+            <button onclick="switchTab('hour')" class="tab-btn px-4 py-2 rounded-sm text-sm md:text-base font-semibold" id="btn-hour">四、排时柱</button>
+            <button onclick="switchTab('practice')" class="tab-btn px-4 py-2 rounded-sm text-sm md:text-base font-semibold" id="btn-practice">综合排盘测试</button>
+        </nav>
+
+        <!-- 内容区域 -->
+        <main class="bg-white p-6 md:p-10 shadow-lg rounded-sm border border-[#e6d9c3]">
+            
+            <!-- 基础知识 -->
+            <section id="tab-intro" class="tab-content active">
+                <h2 class="text-2xl font-bold text-[#8c2e2e] border-b-2 border-[#8c2e2e] inline-block pb-2 mb-6">十天干与十二地支</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">十天干</h3>
+                        <p class="mb-2 text-gray-600">天干共有十个，循环使用，代表天之气。</p>
+                        <table>
+                            <tr><th>序号</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>
+                            <tr class="font-bold text-lg"><th>天干</th><td class="text-green-700">甲</td><td class="text-green-700">乙</td><td class="text-red-600">丙</td><td class="text-red-600">丁</td><td class="text-yellow-700">戊</td><td class="text-yellow-700">己</td><td class="text-gray-500">庚</td><td class="text-gray-500">辛</td><td class="text-blue-600">壬</td><td class="text-blue-600">癸</td></tr>
+                            <tr class="text-sm"><th>五行</th><td colspan="2">木</td><td colspan="2">火</td><td colspan="2">土</td><td colspan="2">金</td><td colspan="2">水</td></tr>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">十二地支</h3>
+                        <p class="mb-2 text-gray-600">地支共有十二个，与生肖对应，代表地之气。</p>
+                        <table>
+                            <tr><th>序号</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+                            <tr class="font-bold text-lg"><th>地支</th><td>子</td><td>丑</td><td>寅</td><td>卯</td><td>辰</td><td>巳</td><td>午</td><td>未</td><td>申</td><td>酉</td><td>戌</td><td>亥</td></tr>
+                            <tr class="text-sm"><th>生肖</th><td>鼠</td><td>牛</td><td>虎</td><td>兔</td><td>龙</td><td>蛇</td><td>马</td><td>羊</td><td>猴</td><td>鸡</td><td>狗</td><td>猪</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-8 bg-[#fdfaf4] p-4 border-l-4 border-[#8c2e2e]">
+                    <h4 class="font-bold text-[#8c2e2e] mb-2">💡 什么是六十甲子？</h4>
+                    <p>将十天干与十二地支按顺序依次组合（阳干配阳支，阴干配阴支），如第一组是“甲子”，第二组是“乙丑”…… 直到“癸亥”，一共可形成60个组合，称为一个“甲子”循环。年、月、日、时都是以这个60周期来不断循环记录的。</p>
+                </div>
+            </section>
+
+            <!-- 排年柱 -->
+            <section id="tab-year" class="tab-content">
+                <h2 class="text-2xl font-bold text-[#8c2e2e] border-b-2 border-[#8c2e2e] inline-block pb-2 mb-6">一、年柱推算法</h2>
+                <div class="bg-gray-50 p-6 rounded-md mb-6">
+                    <p class="mb-4">公历年份转换干支年的数学公式非常简单。因为公元4年正好是“甲子”年，所以我们可以通过求余数的方法快速算出。</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 border border-gray-200 shadow-sm">
+                            <h4 class="font-bold text-lg text-red-800 mb-2">求天干公式</h4>
+                            <p class="font-mono bg-gray-100 p-2 text-center rounded">天干代号 = (年份 - 3) ÷ 10 的余数</p>
+                            <ul class="text-sm mt-2 text-gray-600 list-disc list-inside">
+                                <li>余数 1: 甲， 2: 乙， 3: 丙， 4: 丁， 5: 戊</li>
+                                <li>余数 6: 己， 7: 庚， 8: 辛， 9: 壬， 0(或10): 癸</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 border border-gray-200 shadow-sm">
+                            <h4 class="font-bold text-lg text-red-800 mb-2">求地支公式</h4>
+                            <p class="font-mono bg-gray-100 p-2 text-center rounded">地支代号 = (年份 - 3) ÷ 12 的余数</p>
+                            <ul class="text-sm mt-2 text-gray-600 list-disc list-inside">
+                                <li>余数 1: 子， 2: 丑， 3: 寅， 4: 卯， 5: 辰， 6: 巳</li>
+                                <li>余数 7: 午， 8: 未， 9: 申， 10: 酉， 11: 戌， 0(或12): 亥</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-2 border-dashed border-[#8c2e2e] p-6 rounded-md bg-[#fdfaf4]">
+                    <h3 class="font-bold text-xl mb-4 text-center">动手算一算</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                        <input type="number" id="calc-year-input" placeholder="输入公历年份，如 2024" class="border p-2 w-full md:w-64 text-lg outline-none focus:border-[#8c2e2e]">
+                        <button onclick="calculateYearTuto()" class="bg-[#8c2e2e] text-white px-6 py-2 rounded hover:bg-red-900 transition">计算年柱</button>
+                    </div>
+                    <div id="year-result" class="mt-6 hidden">
+                        <!-- 计算过程展示 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 排月柱 -->
+            <section id="tab-month" class="tab-content">
+                <h2 class="text-2xl font-bold text-[#8c2e2e] border-b-2 border-[#8c2e2e] inline-block pb-2 mb-6">二、月柱推算法（五虎遁）</h2>
+                
+                <div class="bg-[#fdfaf4] p-4 border-l-4 border-yellow-600 mb-6 text-sm">
+                    <strong>⚠️ 历法注意：</strong>八字命理中，一年并非始于正月初一，而是始于<strong>立春</strong>。月的划分严格按照“二十四节气”来定（如惊蛰、清明等）。为方便初学者掌握“公式”，本教程将采用月份序号（1-12）做演示，假定正月从寅开始。
+                </div>
+
+                <p class="mb-4">月柱的地支是固定的：正月为寅，二月为卯，依次类推至十二月为丑。由于正月总是“寅（虎）”，而推算月天干的口诀被称为<strong>“五虎遁年上起月诀”</strong>：</p>
+
+                <div class="text-center font-bold text-lg md:text-xl leading-loose my-6 text-[#8c2e2e]">
+                    甲己之年丙作首，乙庚之岁戊为头。<br>
+                    丙辛必定寻庚起，丁壬壬位顺行流。<br>
+                    若问戊癸何方发，甲寅之上好追求。
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="text-sm">
+                        <tr>
+                            <th rowspan="2">月建（地支）</th><th rowspan="2">月份(简)</th>
+                            <th colspan="5">年干（年份个位数对应）</th>
+                        </tr>
+                        <tr>
+                            <th>甲、己 (4,9)</th><th>乙、庚 (5,0)</th><th>丙、辛 (6,1)</th><th>丁、壬 (7,2)</th><th>戊、癸 (8,3)</th>
+                        </tr>
+                        <tr><td>寅月</td><td>正月</td><td class="bg-red-50 font-bold">丙寅</td><td class="bg-yellow-50 font-bold">戊寅</td><td class="bg-gray-50 font-bold">庚寅</td><td class="bg-blue-50 font-bold">壬寅</td><td class="bg-green-50 font-bold">甲寅</td></tr>
+                        <tr><td>卯月</td><td>二月</td><td>丁卯</td><td>己卯</td><td>辛卯</td><td>癸卯</td><td>乙卯</td></tr>
+                        <tr><td>辰月</td><td>三月</td><td>戊辰</td><td>庚辰</td><td>壬辰</td><td>甲辰</td><td>丙辰</td></tr>
+                        <tr><td colspan="7" class="text-gray-400">... (依天干地支顺序顺推) ...</td></tr>
+                    </table>
+                </div>
+
+                <div class="border-2 border-dashed border-[#8c2e2e] p-6 rounded-md bg-white mt-6">
+                    <h3 class="font-bold text-xl mb-4 text-center">实战演练：五虎遁推算</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                        <select id="calc-month-year-stem" class="border p-2 outline-none focus:border-[#8c2e2e]">
+                            <option value="甲">甲 年</option><option value="乙">乙 年</option><option value="丙">丙 年</option>
+                            <option value="丁">丁 年</option><option value="戊">戊 年</option><option value="己">己 年</option>
+                            <option value="庚">庚 年</option><option value="辛">辛 年</option><option value="壬">壬 年</option><option value="癸">癸 年</option>
+                        </select>
+                        <select id="calc-month-month-num" class="border p-2 outline-none focus:border-[#8c2e2e]">
+                            <option value="1">1月 (寅)</option><option value="2">2月 (卯)</option><option value="3">3月 (辰)</option>
+                            <option value="4">4月 (巳)</option><option value="5">5月 (午)</option><option value="6">6月 (未)</option>
+                            <option value="7">7月 (申)</option><option value="8">8月 (酉)</option><option value="9">9月 (戌)</option>
+                            <option value="10">10月 (亥)</option><option value="11">11月 (子)</option><option value="12">12月 (丑)</option>
+                        </select>
+                        <button onclick="calculateMonthTuto()" class="bg-[#8c2e2e] text-white px-6 py-2 rounded hover:bg-red-900 transition">求月柱</button>
+                    </div>
+                    <div id="month-result" class="mt-6 hidden text-center text-lg"></div>
+                </div>
+            </section>
+
+            <!-- 排日柱 -->
+            <section id="tab-day" class="tab-content">
+                <h2 class="text-2xl font-bold text-[#8c2e2e] border-b-2 border-[#8c2e2e] inline-block pb-2 mb-6">三、日柱推算法</h2>
+                <p class="mb-4">日干支是连续不断的60天循环，不受平闰年或月份长短影响。古代通常依靠查《万年历》来获取日柱。</p>
+                <p class="mb-4">但在现代，我们可以利用已知的一个“基准日”，通过计算相差的天数来推算目标日期的干支。这种方法被称为<strong>基准日推算法</strong>。</p>
+
+                <div class="bg-gray-50 p-6 rounded-md mb-6 border-l-4 border-blue-600">
+                    <h4 class="font-bold text-lg mb-2">现代速算法（以2024年1月1日为基准）</h4>
+                    <p>幸运的是，<strong>2024年1月1日</strong> 恰好是一个循环的起点：<strong>甲子日</strong>！</p>
+                    <ol class="list-decimal list-inside mt-4 space-y-2 text-gray-700">
+                        <li>计算目标日期与 2024年1月1日 相差的总天数（设为 <code class="bg-white px-1 border">D</code>）。</li>
+                        <li><strong>求日天干：</strong>(D % 10) 的余数，在天干中往后推。</li>
+                        <li><strong>求日地支：</strong>(D % 12) 的余数，在地支中往后推。</li>
+                    </ol>
+                    <p class="text-sm mt-2 text-gray-500">*注：若目标日期在基准日前，则相差天数为负数，需做反向推算修正。</p>
+                </div>
+
+                <div class="border-2 border-dashed border-[#8c2e2e] p-6 rounded-md bg-[#fdfaf4] mt-6">
+                    <h3 class="font-bold text-xl mb-4 text-center">程序模拟演算</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                        <input type="date" id="calc-day-input" class="border p-2 w-full md:w-auto outline-none focus:border-[#8c2e2e]" value="2024-05-01">
+                        <button onclick="calculateDayTuto()" class="bg-[#8c2e2e] text-white px-6 py-2 rounded hover:bg-red-900 transition">演算日柱</button>
+                    </div>
+                    <div id="day-result" class="mt-6 hidden"></div>
+                </div>
+            </section>
+
+            <!-- 排时柱 -->
+            <section id="tab-hour" class="tab-content">
+                <h2 class="text-2xl font-bold text-[#8c2e2e] border-b-2 border-[#8c2e2e] inline-block pb-2 mb-6">四、时柱推算法（五鼠遁）</h2>
+                <p class="mb-4">古人将一天分为12个时辰，每个时辰等于现在的2小时。时柱的地支由时间直接决定（23点到1点为子时，依次类推）。推算时柱的天干，依靠日干，口诀称为<strong>“五鼠遁日上起时诀”</strong>：</p>
+                
+                <div class="text-center font-bold text-lg md:text-xl leading-loose my-6 text-[#8c2e2e]">
+                    甲己还加甲，乙庚丙作初。<br>
+                    丙辛从戊起，丁壬庚子居。<br>
+                    戊癸何方发，壬子是真途。
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                    <div>
+                        <h4 class="font-bold text-lg mb-2">12时辰对照表</h4>
+                        <table class="text-sm">
+                            <tr><th>时辰</th><th>现代时间</th><th>时辰</th><th>现代时间</th></tr>
+                            <tr><td>子时</td><td>23:00 - 01:00</td><td>午时</td><td>11:00 - 13:00</td></tr>
+                            <tr><td>丑时</td><td>01:00 - 03:00</td><td>未时</td><td>13:00 - 15:00</td></tr>
+                            <tr><td>寅时</td><td>03:00 - 05:00</td><td>申时</td><td>15:00 - 17:00</td></tr>
+                            <tr><td>卯时</td><td>05:00 - 07:00</td><td>酉时</td><td>17:00 - 19:00</td></tr>
+                            <tr><td>辰时</td><td>07:00 - 09:00</td><td>戌时</td><td>19:00 - 21:00</td></tr>
+                            <tr><td>巳时</td><td>09:00 - 11:00</td><td>亥时</td><td>21:00 - 23:00</td></tr>
+                        </table>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2">口诀解析 (子时天干)</h4>
+                        <ul class="space-y-3 text-gray-700 bg-gray-50 p-4 rounded h-full border border-gray-200">
+                            <li><strong>甲、己</strong>日：子时起于 <strong>甲</strong> (甲子时)</li>
+                            <li><strong>乙、庚</strong>日：子时起于 <strong>丙</strong> (丙子时)</li>
+                            <li><strong>丙、辛</strong>日：子时起于 <strong>戊</strong> (戊子时)</li>
+                            <li><strong>丁、壬</strong>日：子时起于 <strong>庚</strong> (庚子时)</li>
+                            <li><strong>戊、癸</strong>日：子时起于 <strong>壬</strong> (壬子时)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-2 border-dashed border-[#8c2e2e] p-6 rounded-md bg-white">
+                    <h3 class="font-bold text-xl mb-4 text-center">推算时柱测试</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                        <select id="calc-hour-day-stem" class="border p-2 outline-none focus:border-[#8c2e2e]">
+                            <option value="甲">甲 日</option><option value="乙">乙 日</option><option value="丙">丙 日</option>
+                            <option value="丁">丁 日</option><option value="戊">戊 日</option><option value="己">己 日</option>
+                            <option value="庚">庚 日</option><option value="辛">辛 日</option><option value="壬">壬 日</option><option value="癸">癸 日</option>
+                        </select>
+                        <select id="calc-hour-time" class="border p-2 outline-none focus:border-[#8c2e2e]">
+                            <option value="0">23:00-01:00 (子)</option><option value="1">01:00-03:00 (丑)</option>
+                            <option value="2">03:00-05:00 (寅)</option><option value="3">05:00-07:00 (卯)</option>
+                            <option value="4">07:00-09:00 (辰)</option><option value="5">09:00-11:00 (巳)</option>
+                            <option value="6">11:00-13:00 (午)</option><option value="7">13:00-15:00 (未)</option>
+                            <option value="8">15:00-17:00 (申)</option><option value="9">17:00-19:00 (酉)</option>
+                            <option value="10">19:00-21:00 (戌)</option><option value="11">21:00-23:00 (亥)</option>
+                        </select>
+                        <button onclick="calculateHourTuto()" class="bg-[#8c2e2e] text-white px-6 py-2 rounded hover:bg-red-900 transition">求时柱</button>
+                    </div>
+                    <div id="hour-result" class="mt-6 hidden text-center text-lg"></div>
+                </div>
+            </section>
+
+            <!-- 综合排盘测试 -->
+            <section id="tab-practice" class="tab-content">
+                <h2 class="text-2xl font-bold text-[#8c2e2e] border-b-2 border-[#8c2e2e] inline-block pb-2 mb-6">综合排盘工具 (教学版)</h2>
+                <div class="bg-[#fdfaf4] p-4 border-l-4 border-yellow-600 mb-6 text-sm text-gray-700">
+                    <strong>⚠️ 教学版免责声明：</strong>正统八字排盘的“月柱”更替严格依赖天文“节气”（如立春定寅月，惊蛰定卯月），而非公历或农历的1号。本系统作为<strong>计算原理教学</strong>，在“月份”处理上采用简化逻辑（假定农历正月即寅月，按输入月份顺序推导），主要用于验证五虎遁、五鼠遁等数学逻辑，不可直接用于真实专业命理预测。
+                </div>
+
+                <div class="max-w-md mx-auto bg-white p-6 shadow border border-gray-200 rounded">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-bold mb-2">选择公历日期和时间</label>
+                        <input type="datetime-local" id="bazi-datetime" class="w-full border p-2 outline-none focus:border-[#8c2e2e]">
+                    </div>
+                    <button onclick="generateBazi()" class="w-full bg-[#8c2e2e] text-white font-bold py-3 rounded hover:bg-red-900 transition text-lg">一键生成八字干支</button>
+                </div>
+
+                <div id="bazi-output" class="hidden mt-10">
+                    <h3 class="text-center font-bold text-xl mb-6">您的四柱八字排盘结果</h3>
+                    <div class="flex justify-center gap-4 md:gap-12">
+                        <!-- 时柱 -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-gray-500 mb-2 font-bold">时柱</span>
+                            <div class="bazi-box text-3xl font-bold p-4 bg-gradient-to-b from-[#f2e8d5] to-[#fdfaf4] border-2 border-[#8c2e2e] rounded shadow-md text-[#8c2e2e]" id="out-hour">甲子</div>
+                        </div>
+                        <!-- 日柱 -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-gray-500 mb-2 font-bold">日柱</span>
+                            <div class="bazi-box text-3xl font-bold p-4 bg-gradient-to-b from-[#f2e8d5] to-[#fdfaf4] border-2 border-[#8c2e2e] rounded shadow-md text-[#8c2e2e]" id="out-day">甲子</div>
+                        </div>
+                        <!-- 月柱 -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-gray-500 mb-2 font-bold">月柱</span>
+                            <div class="bazi-box text-3xl font-bold p-4 bg-gradient-to-b from-[#f2e8d5] to-[#fdfaf4] border-2 border-[#8c2e2e] rounded shadow-md text-[#8c2e2e]" id="out-month">甲子</div>
+                        </div>
+                        <!-- 年柱 -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-gray-500 mb-2 font-bold">年柱</span>
+                            <div class="bazi-box text-3xl font-bold p-4 bg-gradient-to-b from-[#f2e8d5] to-[#fdfaf4] border-2 border-[#8c2e2e] rounded shadow-md text-[#8c2e2e]" id="out-year">甲子</div>
+                        </div>
+                    </div>
+                    <div id="bazi-explanation" class="mt-8 bg-gray-50 p-6 rounded border border-gray-200 text-sm md:text-base leading-relaxed">
+                        <!-- 动态解析 -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+        
+        <footer class="text-center text-gray-500 text-sm mt-12 mb-4">
+            <p>干支历法计算原理教学系统 © 基于 JavaScript 与公式推演构建</p>
+        </footer>
+    </div>
+
+    <script>
+        // 核心数据
+        const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+        const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+        
+        // 选项卡切换逻辑
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+        }
+
+        // --- 年柱计算逻辑 ---
+        function calculateYearTuto() {
+            const yearStr = document.getElementById('calc-year-input').value;
+            if(!yearStr) return alert("请输入年份！");
+            const year = parseInt(yearStr);
+            
+            // 公式计算
+            const stemIndex = (year - 3) % 10;
+            const branchIndex = (year - 3) % 12;
+            
+            // 处理负数或0
+            const sIdx = stemIndex <= 0 ? stemIndex + 10 : stemIndex;
+            const bIdx = branchIndex <= 0 ? branchIndex + 12 : branchIndex;
+            
+            // 数组是0索引，所以减1
+            const stem = STEMS[sIdx - 1];
+            const branch = BRANCHES[bIdx - 1];
+            
+            const resultDiv = document.getElementById('year-result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = `
+                <div class="bg-white p-4 rounded shadow border border-green-200">
+                    <p class="font-bold text-lg mb-2">演算过程：</p>
+                    <p>1. 天干：(${year} - 3) ÷ 10 = ${Math.floor((year-3)/10)} 余 <strong class="text-red-600">${sIdx}</strong>。查表第${sIdx}位为 <strong>${stem}</strong>。</p>
+                    <p>2. 地支：(${year} - 3) ÷ 12 = ${Math.floor((year-3)/12)} 余 <strong class="text-red-600">${bIdx}</strong>。查表第${bIdx}位为 <strong>${branch}</strong>。</p>
+                    <p class="text-xl mt-4 text-center">公元 ${year} 年是：<strong class="text-3xl text-[#8c2e2e]">${stem}${branch}</strong> 年</p>
+                </div>
+            `;
+        }
+
+        // --- 月柱计算逻辑 ---
+        // rule mapping: 年干index -> 正月的天干index (甲己丙作首...)
+        const MONTH_RULE = [2, 4, 6, 8, 0, 2, 4, 6, 8, 0]; // 甲0->丙2, 乙1->戊4, 丙2->庚6...
+
+        function calculateMonthTuto() {
+            const stemStr = document.getElementById('calc-month-year-stem').value;
+            const monthNum = parseInt(document.getElementById('calc-month-month-num').value); // 1-12
+            
+            const yearStemIdx = STEMS.indexOf(stemStr);
+            const startStemIdx = MONTH_RULE[yearStemIdx];
+            
+            // 月份地支: 寅是2 (0索引下子0,丑1,寅2)
+            const monthBranchIdx = (monthNum + 1) % 12; 
+            const branch = BRANCHES[monthBranchIdx];
+            
+            // 目标月份的天干 = (正月天干 + 间隔月数) % 10
+            const targetStemIdx = (startStemIdx + monthNum - 1) % 10;
+            const stem = STEMS[targetStemIdx];
+            
+            const resultDiv = document.getElementById('month-result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = `
+                “${stemStr}”年 的第 ${monthNum} 个月，干支为：<strong class="text-3xl text-[#8c2e2e] block mt-2">${stem}${branch}</strong>
+            `;
+        }
+
+        // --- 日柱计算逻辑 ---
+        function calculateDayTuto() {
+            const dateStr = document.getElementById('calc-day-input').value;
+            if(!dateStr) return;
+            
+            const targetDate = new Date(dateStr + "T00:00:00");
+            const baseDate = new Date("2024-01-01T00:00:00"); // 2024-01-01 是 甲子日
+            
+            // 算出相差天数
+            const diffTime = targetDate.getTime() - baseDate.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
+            
+            // 甲(0), 子(0)
+            let stemIdx = diffDays % 10;
+            if (stemIdx < 0) stemIdx += 10;
+            
+            let branchIdx = diffDays % 12;
+            if (branchIdx < 0) branchIdx += 12;
+            
+            const stem = STEMS[stemIdx];
+            const branch = BRANCHES[branchIdx];
+            
+            const resultDiv = document.getElementById('day-result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = `
+                <div class="bg-white p-4 rounded shadow border border-blue-200">
+                    <p class="font-bold text-lg mb-2">演算过程：</p>
+                    <p>基准日：2024年1月1日 (甲子日)</p>
+                    <p>相差天数：${diffDays} 天</p>
+                    <p>天干偏移：${diffDays} % 10 = ${diffDays % 10} -> <strong>${stem}</strong></p>
+                    <p>地支偏移：${diffDays} % 12 = ${diffDays % 12} -> <strong>${branch}</strong></p>
+                    <p class="text-xl mt-4 text-center">${dateStr} 的日柱是：<strong class="text-3xl text-[#8c2e2e]">${stem}${branch}</strong> 日</p>
+                </div>
+            `;
+        }
+
+        // --- 时柱计算逻辑 ---
+        // rule mapping: 日干index -> 子时的天干index (甲己还加甲...)
+        const HOUR_RULE = [0, 2, 4, 6, 8, 0, 2, 4, 6, 8]; // 甲0->甲0, 乙1->丙2...
+
+        function calculateHourTuto() {
+            const stemStr = document.getElementById('calc-hour-day-stem').value;
+            const hourBranchIdx = parseInt(document.getElementById('calc-hour-time').value); // 0-11
+            
+            const dayStemIdx = STEMS.indexOf(stemStr);
+            const startStemIdx = HOUR_RULE[dayStemIdx];
+            
+            const branch = BRANCHES[hourBranchIdx];
+            const targetStemIdx = (startStemIdx + hourBranchIdx) % 10;
+            const stem = STEMS[targetStemIdx];
+            
+            const resultDiv = document.getElementById('hour-result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = `
+                “${stemStr}”日 的 ${branch}时，干支为：<strong class="text-3xl text-[#8c2e2e] block mt-2">${stem}${branch}</strong>
+            `;
+        }
+
+        // --- 综合排盘核心代码 ---
+        function generateBazi() {
+            const dtStr = document.getElementById('bazi-datetime').value;
+            if(!dtStr) {
+                alert("请选择日期和时间！");
+                return;
+            }
+            const dt = new Date(dtStr);
+            const year = dt.getFullYear();
+            const month = dt.getMonth() + 1; // 1-12
+            const day = dt.getDate();
+            const hour = dt.getHours();
+
+            // 1. 年
+            const yStemIdx = (year - 3) % 10 <= 0 ? (year - 3) % 10 + 9 : (year - 3) % 10 - 1;
+            const yBranchIdx = (year - 3) % 12 <= 0 ? (year - 3) % 12 + 11 : (year - 3) % 12 - 1;
+            const yStem = STEMS[yStemIdx];
+            const yBranch = BRANCHES[yBranchIdx];
+
+            // 2. 月 (简化版，视当月为当前农历月顺序，实际需看节气。这里以正月=寅，通常公历2月=正月)
+            // 为求公式连贯，这里简单映射：公历2月视作正月(寅)，3月视作二月(卯)... 
+            let lunarMonthApproximation = month - 1; 
+            if(lunarMonthApproximation <= 0) lunarMonthApproximation += 12; // 1月当成去年的12月丑
+            
+            const mStartStemIdx = MONTH_RULE[yStemIdx];
+            const mBranchIdx = (lunarMonthApproximation + 1) % 12; // 寅是2
+            const mStemIdx = (mStartStemIdx + lunarMonthApproximation - 1) % 10;
+            const mStem = STEMS[mStemIdx];
+            const mBranch = BRANCHES[mBranchIdx];
+
+            // 若是公历1月或2月头，其实年柱还没变。这里教学为了直观，未做复杂立春切分，仅在解析中提示。
+
+            // 3. 日
+            // 使用 UTC 防止时区干扰，固定中午12点保证不跨日
+            const targetUtc = Date.UTC(year, month - 1, day, 12, 0, 0);
+            const baseUtc = Date.UTC(2024, 0, 1, 12, 0, 0); // 2024-01-01 甲子
+            const diffDays = Math.floor((targetUtc - baseUtc) / 86400000);
+            
+            let dStemIdx = diffDays % 10; if (dStemIdx < 0) dStemIdx += 10;
+            let dBranchIdx = diffDays % 12; if (dBranchIdx < 0) dBranchIdx += 12;
+            const dStem = STEMS[dStemIdx];
+            const dBranch = BRANCHES[dBranchIdx];
+
+            // 4. 时
+            // 根据小时换算时辰地支 (23-1 子时=0)
+            const hBranchIdx = Math.floor((hour + 1) / 2) % 12;
+            
+            // 注意：如果是23点以后（子时），在八字排盘中通常算作**第二天**的子时（早子/晚子问题）。这里按标准第二天算。
+            let actualDStemIdx = dStemIdx;
+            if (hour >= 23) {
+                actualDStemIdx = (dStemIdx + 1) % 10;
+                // 日支也要变，但只是为了算时天干，输出显示的日柱这里暂不变更(传统有分歧，此处以通用为准)
+            }
+
+            const hStartStemIdx = HOUR_RULE[actualDStemIdx];
+            const hStemIdx = (hStartStemIdx + hBranchIdx) % 10;
+            const hStem = STEMS[hStemIdx];
+            const hBranch = BRANCHES[hBranchIdx];
+
+            // 渲染结果
+            document.getElementById('out-year').innerText = yStem + yBranch;
+            document.getElementById('out-month').innerText = mStem + mBranch;
+            document.getElementById('out-day').innerText = dStem + dBranch;
+            document.getElementById('out-hour').innerText = hStem + hBranch;
+
+            document.getElementById('bazi-output').classList.remove('hidden');
+
+            document.getElementById('bazi-explanation').innerHTML = `
+                <p><strong>排盘解析：</strong></p>
+                <ul class="list-disc list-inside mt-2 space-y-1">
+                    <li><strong>年柱（${yStem}${yBranch}）：</strong>由公式 (${year}-3)%10=${yStemIdx+1} 求得天干${yStem}，(${year}-3)%12=${yBranchIdx+1} 求得地支${yBranch}。</li>
+                    <li><strong>月柱（${mStem}${mBranch}）：</strong>通过“五虎遁”口诀（${yStem}年以${STEMS[mStartStemIdx]}为正月首），推演得到${mStem}${mBranch}。<em>(注：教学简化版视公历${month}月为对应序列)</em></li>
+                    <li><strong>日柱（${dStem}${dBranch}）：</strong>通过与2024年1月1日(甲子)作差值演算得出。</li>
+                    <li><strong>时柱（${hStem}${hBranch}）：</strong>${hour}点属于${hBranch}时。依日干“${dStem}”代入“五鼠遁”口诀推得时干为${hStem}。</li>
+                </ul>
+            `;
+        }
+    </script>
+</body>
+</html>

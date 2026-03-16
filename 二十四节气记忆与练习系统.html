@@ -1,0 +1,554 @@
+
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二十四节气记忆与练习系统</title>
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --secondary: #40916c;
+            --bg: #e9ecef;
+            --text: #212529;
+            --light: #d8f3dc;
+            --correct: #2a9d8f;
+            --wrong: #e63946;
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            max-width: 600px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-top: 2vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            margin: 10px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            color: #6c757d;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+            background: #f1f3f5;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            background: white;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .content {
+            padding: 25px;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 学习模式样式 */
+        .song {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            line-height: 2;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 18px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+        }
+        
+        .song-hint {
+            display: block;
+            font-size: 13px;
+            color: #495057;
+            font-weight: normal;
+            margin-top: 10px;
+        }
+
+        .season-group { 
+            margin-bottom: 20px; 
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .season-title {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .season-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: var(--primary);
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .term-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .term-item {
+            background: white;
+            padding: 12px 5px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s;
+        }
+        
+        .term-item:hover {
+            transform: scale(1.03);
+            border-color: var(--light);
+        }
+
+        .term-item span { 
+            color: #868e96; 
+            display: block; 
+            font-size: 12px; 
+            margin-top: 4px;
+            font-weight: normal;
+        }
+
+        /* 练习模式样式 */
+        .quiz-container { 
+            text-align: center; 
+        }
+
+        .quiz-hint {
+            color: #6c757d;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .date-display {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 20px 0 30px 0;
+            padding: 30px 20px;
+            background: var(--light);
+            border-radius: 16px;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.04);
+            letter-spacing: 2px;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-option {
+            background: white;
+            border: 2px solid #dee2e6;
+            color: var(--text);
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-option:hover:not(:disabled) { 
+            border-color: var(--primary);
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .btn-option:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-option:disabled {
+            cursor: default;
+        }
+
+        .btn-option.correct { 
+            background: var(--correct); 
+            color: white; 
+            border-color: var(--correct); 
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+        }
+
+        .btn-option.wrong { 
+            background: var(--wrong); 
+            color: white; 
+            border-color: var(--wrong); 
+            opacity: 0.8;
+        }
+
+        .feedback {
+            margin-top: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 27px;
+            transition: opacity 0.3s;
+        }
+
+        .action-area {
+            margin-top: 25px;
+            min-height: 50px;
+        }
+
+        #nextBtn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            margin: 0 auto;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(45, 106, 79, 0.3);
+        }
+
+        #nextBtn:hover { 
+            background: var(--secondary); 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(45, 106, 79, 0.4);
+        }
+
+        .stats {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-around;
+            color: #495057;
+            font-size: 15px;
+            font-weight: 500;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .term-grid { grid-template-columns: repeat(2, 1fr); }
+            .options { grid-template-columns: 1fr; }
+            .date-display { font-size: 36px; padding: 20px; }
+            .song { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>二十四节气记忆系统</h1>
+        <p>形成条件反射，看日期知节气</p>
+    </header>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('learn')">📚 学习模式</div>
+        <div class="tab" onclick="switchTab('practice')">🎯 条件反射练习</div>
+    </div>
+
+    <!-- 学习模式 -->
+    <div id="learn" class="content active">
+        <div class="song">
+            春雨惊春清谷天，<br>夏满芒夏暑相连。<br>
+            秋处露秋寒霜降，<br>冬雪雪冬小大寒。
+            <span class="song-hint">💡 秘诀：上半年逢六廿一，下半年逢八廿三 (最多相差一两天)</span>
+        </div>
+        
+        <div id="term-list"></div>
+    </div>
+
+    <!-- 练习模式 -->
+    <div id="practice" class="content">
+        <div class="quiz-container">
+            <p class="quiz-hint">请根据以下大概公历日期，快速选出对应的节气：</p>
+            <div class="date-display" id="question-date">加载中...</div>
+            <div class="options" id="options-container">
+                <!-- 选项由JS生成 -->
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <div class="action-area">
+                <button id="nextBtn" onclick="generateQuestion()">下一题 ➔</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span>答题数</span>
+                    <span class="stat-value" id="total-text">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>答对数</span>
+                    <span class="stat-value" id="correct-text" style="color: var(--correct)">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>正确率</span>
+                    <span class="stat-value" id="accuracy-text">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 节气基础数据（月份和大概的公历日期基准）
+    const solarTerms = [
+        { name: '立春', month: 2, day: 4, season: '春' }, { name: '雨水', month: 2, day: 19, season: '春' },
+        { name: '惊蛰', month: 3, day: 6, season: '春' }, { name: '春分', month: 3, day: 21, season: '春' },
+        { name: '清明', month: 4, day: 5, season: '春' }, { name: '谷雨', month: 4, day: 20, season: '春' },
+        { name: '立夏', month: 5, day: 6, season: '夏' }, { name: '小满', month: 5, day: 21, season: '夏' },
+        { name: '芒种', month: 6, day: 6, season: '夏' }, { name: '夏至', month: 6, day: 21, season: '夏' },
+        { name: '小暑', month: 7, day: 7, season: '夏' }, { name: '大暑', month: 7, day: 23, season: '夏' },
+        { name: '立秋', month: 8, day: 8, season: '秋' }, { name: '处暑', month: 8, day: 23, season: '秋' },
+        { name: '白露', month: 9, day: 8, season: '秋' }, { name: '秋分', month: 9, day: 23, season: '秋' },
+        { name: '寒露', month: 10, day: 8, season: '秋' }, { name: '霜降', month: 10, day: 23, season: '秋' },
+        { name: '立冬', month: 11, day: 7, season: '冬' }, { name: '小雪', month: 11, day: 22, season: '冬' },
+        { name: '大雪', month: 12, day: 7, season: '冬' }, { name: '冬至', month: 12, day: 22, season: '冬' },
+        { name: '小寒', month: 1, day: 6, season: '冬' }, { name: '大寒', month: 1, day: 20, season: '冬' }
+    ];
+
+    let currentCorrectTerm = null;
+    let totalAnswered = 0;
+    let correctAnswers = 0;
+    let answeredCurrent = false;
+
+    // 切换标签页
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+
+        // 如果切换到练习模式且没有题目，则生成一题
+        if (tabId === 'practice' && !currentCorrectTerm) {
+            generateQuestion();
+        }
+    }
+
+    // 渲染学习列表
+    function renderLearnList() {
+        const listDiv = document.getElementById('term-list');
+        const seasons = ['春', '夏', '秋', '冬'];
+        const seasonEmojis = {'春': '🌱', '夏': '☀️', '秋': '🍂', '冬': '❄️'};
+        
+        listDiv.innerHTML = ''; // 清空内容
+        
+        seasons.forEach(season => {
+            const seasonTerms = solarTerms.filter(t => t.season === season);
+            let html = `<div class="season-group">
+                            <div class="season-title">${seasonEmojis[season]} ${season}季</div>
+                            <div class="term-grid">`;
+            seasonTerms.forEach(t => {
+                html += `<div class="term-item">${t.name}<span>公历 ~${t.month}月${t.day}日</span></div>`;
+            });
+            html += `</div></div>`;
+            listDiv.innerHTML += html;
+        });
+    }
+
+    // 打乱数组 (Fisher-Yates 洗牌算法)
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    // 生成问题
+    function generateQuestion() {
+        answeredCurrent = false;
+        document.getElementById('feedback').innerHTML = '';
+        document.getElementById('nextBtn').style.display = 'none';
+
+        // 随机选择一个正确的节气
+        const randomIndex = Math.floor(Math.random() * solarTerms.length);
+        currentCorrectTerm = solarTerms[randomIndex];
+
+        // 模拟真实日期波动：在基准日期的基础上随机浮动 -1 到 +1 天
+        // 这对于形成条件反射至关重要，防止死记硬背固定数字
+        const dateVariance = Math.floor(Math.random() * 3) - 1; 
+        
+        // 简单处理月份边界（这里为了简化展示逻辑，假设简单的加减天数，真实日历处理会更复杂，但这满足记忆需求）
+        let displayDay = currentCorrectTerm.day + dateVariance;
+        let displayMonth = currentCorrectTerm.month;
+        
+        // 极简边界处理（防止出现2月0日或2月30日的情况，虽不严谨但够用）
+        if(displayDay <= 0) { displayDay = 1; }
+        if(displayDay > 28 && displayMonth === 2) { displayDay = 28; }
+        
+        document.getElementById('question-date').innerText = `${displayMonth}月 ${displayDay}日`;
+
+        // 准备选项（1个正确，3个错误）
+        let options = [currentCorrectTerm];
+        
+        // 为了增加难度，优先从同一个季节或者相邻月份抽取错误选项（这里采用完全随机，降低初学难度）
+        while (options.length < 4) {
+            const randomWrong = solarTerms[Math.floor(Math.random() * solarTerms.length)];
+            // 确保选项不重复
+            if (!options.find(o => o.name === randomWrong.name)) {
+                options.push(randomWrong);
+            }
+        }
+
+        options = shuffleArray(options);
+
+        // 渲染选项
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerText = opt.name;
+            btn.onclick = () => checkAnswer(opt.name, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // 检查答案
+    function checkAnswer(selectedName, btnElement) {
+        if (answeredCurrent) return; // 防止重复点击
+        answeredCurrent = true;
+        totalAnswered++;
+
+        const buttons = document.querySelectorAll('.btn-option');
+        
+        // 禁用所有按钮
+        buttons.forEach(b => b.disabled = true);
+        
+        if (selectedName === currentCorrectTerm.name) {
+            correctAnswers++;
+            btnElement.classList.add('correct');
+            document.getElementById('feedback').innerHTML = `<span style="color: var(--correct);">🎉 准确无误！公历 ${currentCorrectTerm.month}月${currentCorrectTerm.day}日 左右正是 <strong>${currentCorrectTerm.name}</strong>。</span>`;
+        } else {
+            btnElement.classList.add('wrong');
+            // 找出并高亮正确答案
+            buttons.forEach(b => {
+                if (b.innerText === currentCorrectTerm.name) {
+                    b.classList.add('correct');
+                    // 添加一个微妙的动画引导视线
+                    b.style.transform = 'scale(1.05)';
+                    setTimeout(() => b.style.transform = 'scale(1.02)', 300);
+                }
+            });
+            document.getElementById('feedback').innerHTML = `<span style="color: var(--wrong);">❌ 哎呀，猜错了。这个时间通常是 <strong>${currentCorrectTerm.name}</strong> 左右哦。</span>`;
+        }
+
+        // 更新统计数据
+        document.getElementById('total-text').innerText = totalAnswered;
+        document.getElementById('correct-text').innerText = correctAnswers;
+        
+        const accuracy = Math.round((correctAnswers / totalAnswered) * 100) || 0;
+        document.getElementById('accuracy-text').innerText = `${accuracy}%`;
+        
+        // 根据正确率改变颜色
+        if(accuracy >= 80 && totalAnswered > 3) {
+            document.getElementById('accuracy-text').style.color = 'var(--correct)';
+        } else if (accuracy < 50 && totalAnswered > 3) {
+            document.getElementById('accuracy-text').style.color = 'var(--wrong)';
+        }
+        
+        // 显示下一题按钮
+        document.getElementById('nextBtn').style.display = 'block';
+    }
+
+    // 页面加载完成后初始化
+    window.onload = () => {
+        renderLearnList();
+        // 预加载一题，但不切换到练习 tab
+        generateQuestion();
+    };
+</script>
+
+</body>
+</html>

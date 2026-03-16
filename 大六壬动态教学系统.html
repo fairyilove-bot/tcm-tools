@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大六壬动态教学系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #f7f4ed; 
+            --ink-color: #2c2827; 
+            --red-color: #8c2121; 
+            --gold-color: #cda05b; 
+            --blue-color: #2b4c6f; 
+            --cell-bg: #fffcf5;
+        }
+        
+        body { background-color: var(--bg-color); color: var(--ink-color); font-family: 'KaiTi', 'STKaiti', 'SimSun', serif; }
+
+        /* 六壬天地盘 4x4 网格 */
+        .pan-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-rows: repeat(4, minmax(0, 1fr));
+            gap: 2px;
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
+            background-color: var(--gold-color);
+            padding: 3px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            margin: 0 auto;
+        }
+
+        .cell-si { grid-area: 1 / 1 / 2 / 2; }
+        .cell-wu { grid-area: 1 / 2 / 2 / 3; }
+        .cell-wei { grid-area: 1 / 3 / 2 / 4; }
+        .cell-shen { grid-area: 1 / 4 / 2 / 5; }
+        .cell-chen { grid-area: 2 / 1 / 3 / 2; }
+        .cell-center { grid-area: 2 / 2 / 4 / 4; background-color: var(--bg-color) !important; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .cell-you { grid-area: 2 / 4 / 3 / 5; }
+        .cell-mao { grid-area: 3 / 1 / 4 / 2; }
+        .cell-xu { grid-area: 3 / 4 / 4 / 5; }
+        .cell-yin { grid-area: 4 / 1 / 5 / 2; }
+        .cell-chou { grid-area: 4 / 2 / 5 / 3; }
+        .cell-zi { grid-area: 4 / 3 / 5 / 4; }
+        .cell-hai { grid-area: 4 / 4 / 5 / 5; }
+
+        .cell {
+            background-color: var(--cell-bg);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2px 4px;
+            transition: all 0.3s ease;
+        }
+
+        .top-row, .bottom-row { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; line-height: 1.1; }
+        .bottom-row { align-items: flex-end; }
+        .center-row { display: flex; justify-content: center; align-items: center; flex-grow: 1; }
+
+        .deity-text { font-size: clamp(0.55rem, 2.8vw, 0.8rem); color: var(--blue-color); font-weight: bold; opacity: 0; transition: opacity 0.5s; }
+        .shensha-container { display: flex; flex-direction: column; align-items: flex-end; opacity: 0; transition: opacity 0.5s; }
+        .shensha-text { font-size: clamp(0.5rem, 2.5vw, 0.75rem); color: #d97777; font-weight: bold; white-space: nowrap; }
+        
+        .heaven-branch { font-size: clamp(1.4rem, 6.5vw, 2.2rem); font-weight: bold; color: var(--red-color); transform: scale(0.5); opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .six-kin-text { font-size: clamp(0.5rem, 2.5vw, 0.75rem); color: #666; opacity: 0; transition: opacity 0.5s; }
+        .earth-branch { font-size: clamp(0.6rem, 3vw, 0.85rem); color: #999; font-weight: bold; opacity: 0; transition: opacity 0.5s; }
+
+        /* 四课布局 (传统从右向左排列) */
+        .four-classes { display: flex; justify-content: center; gap: 8px; width: 100%; max-width: 450px; margin: 0 auto; opacity: 0; transition: opacity 0.5s ease; }
+        .class-col { display: flex; flex-direction: column; align-items: center; background: rgba(205, 160, 91, 0.08); border: 2px solid transparent; border-radius: 6px; padding: 6px 4px; position: relative; transition: all 0.5s ease; width: 65px; }
+        .class-top { font-size: clamp(1.2rem, 5vw, 1.5rem); font-weight: bold; color: var(--red-color); line-height: 1.2; }
+        .class-bottom { font-size: clamp(1.2rem, 5vw, 1.5rem); font-weight: bold; color: var(--ink-color); line-height: 1.2; }
+        .class-label { font-size: clamp(0.6rem, 2.5vw, 0.75rem); color: #777; margin-top: 4px; border-top: 1px solid #e0e0e0; width: 90%; text-align: center; padding-top: 2px; }
+        .class-deity { font-size: clamp(0.6rem, 2.5vw, 0.75rem); color: var(--blue-color); font-weight: bold; margin-bottom: 2px; opacity: 0; transition: opacity 0.5s;}
+
+        /* 三传布局 (传统垂直排列) */
+        .three-trans { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 250px; margin: 0 auto; opacity: 0; transition: opacity 0.5s ease; }
+        .trans-card { width: 100%; display: flex; align-items: center; justify-content: space-between; background: white; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid var(--red-color); transform: translateY(10px); opacity: 0; transition: all 0.5s ease; }
+        .trans-left { display: flex; align-items: center; gap: 12px; }
+        .trans-label { font-size: clamp(0.7rem, 3vw, 0.85rem); color: #888; font-weight: bold; }
+        .trans-value { font-size: clamp(1.4rem, 6vw, 1.8rem); font-weight: bold; color: var(--ink-color); line-height: 1.1; }
+        .trans-meta { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+        .t-deity { font-size: clamp(0.65rem, 3vw, 0.8rem); color: var(--blue-color); font-weight: bold; opacity: 0; }
+        .t-kin { font-size: clamp(0.65rem, 3vw, 0.8rem); color: #666; opacity: 0; }
+
+        /* 动画与高亮 */
+        .highlight-cell { background-color: #fcf1d4 !important; box-shadow: inset 0 0 10px rgba(205, 160, 91, 0.5); }
+        .highlight-lesson { border-color: #8c2121 !important; background: rgba(140, 33, 33, 0.05) !important; box-shadow: 0 0 10px rgba(140, 33, 33, 0.2); transform: scale(1.05); z-index: 10;}
+        .pulse-text { animation: pulseText 1.5s infinite; }
+        @keyframes pulseText { 0% { transform: scale(1); } 50% { transform: scale(1.15); text-shadow: 0 0 8px rgba(140, 33, 33, 0.4); } 100% { transform: scale(1); } }
+
+        select { background-color: #fff; border: 1px solid #dcdcdc; border-radius: 4px; padding: 4px; text-align: center; font-size: 0.9rem; outline: none; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/rice-paper.png')]">
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-[#8c2121] text-white p-3 flex justify-between items-center shadow-md shrink-0 z-20">
+        <div class="font-bold tracking-widest text-lg">大六壬教学·九宗门</div>
+        <button id="btn-toggle-setup" class="text-xs bg-white text-[#8c2121] px-3 py-1.5 rounded font-bold shadow hidden">修改参数</button>
+    </header>
+
+    <!-- 中间：核心滚动展示区 -->
+    <main class="flex-1 overflow-y-auto w-full relative pb-[180px] hide-scroll" id="main-scroll-area">
+        
+        <!-- 参数设置区 -->
+        <div id="setup-panel" class="bg-white p-4 shadow-sm mb-4 transition-all duration-300 origin-top w-full">
+            <div class="grid grid-cols-5 gap-1 md:gap-2 text-center mb-1 text-xs font-bold text-gray-500">
+                <div>干</div><div>支</div><div>时</div><div>将</div><div>昼夜</div>
+            </div>
+            <div class="grid grid-cols-5 gap-1 md:gap-2 mb-4">
+                <select id="sel-stem" class="w-full"></select>
+                <select id="sel-branch" class="w-full"></select>
+                <select id="sel-hour" class="w-full"></select>
+                <select id="sel-general" class="w-full"></select>
+                <select id="sel-daynight" class="w-full"><option value="day">昼</option><option value="night">夜</option></select>
+            </div>
+            <button id="btn-generate" class="w-full py-2.5 bg-[#cda05b] text-white rounded hover:bg-[#b0884d] font-bold tracking-widest text-sm shadow">生成排盘并开始教学</button>
+        </div>
+
+        <!-- 盘面容器 -->
+        <div id="board-container" class="hidden flex-col items-center px-3 py-4 space-y-5 w-full">
+            <!-- 四课 -->
+            <div id="four-classes" class="four-classes"></div>
+            <!-- 核心天地盘 4x4 Grid -->
+            <div id="main-board" class="pan-grid"></div>
+            <!-- 三传 -->
+            <div id="three-trans" class="three-trans"></div>
+            <!-- 占位底部以防遮挡 -->
+            <div class="h-12"></div>
+        </div>
+    </main>
+
+    <!-- 底部：悬浮固定教学控制台 (高度增加以容纳推导长文) -->
+    <footer id="teaching-controller" class="hidden fixed bottom-0 left-0 w-full bg-[#fdfdfb] shadow-[0_-5px_20px_rgba(0,0,0,0.1)] z-50 rounded-t-xl flex flex-col border-t-2 border-[#cda05b]">
+        <!-- 讲解文本区 -->
+        <div class="px-5 py-4 flex-1 overflow-y-auto" style="height: 240px; max-height: 42vh;">
+            <h3 id="step-title" class="font-bold text-[#8c2121] text-[1.1rem] border-b-2 border-[#cda05b] inline-block mb-2 pb-1">加载中...</h3>
+            <div id="step-desc" class="text-[0.95rem] text-gray-800 leading-relaxed transition-opacity duration-300 space-y-2">
+                准备推演...
+            </div>
+        </div>
+        <!-- 按钮控制区 -->
+        <div class="px-4 py-2 bg-gray-100 flex justify-between items-center shrink-0 border-t border-gray-200">
+            <button id="btn-prev" class="px-5 py-2 rounded-full border border-[#cda05b] text-[#cda05b] bg-white text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">上一步</button>
+            <div class="text-xs text-gray-500 font-bold tracking-widest"><span id="step-counter" class="text-[#8c2121] text-sm">1</span> / 7</div>
+            <button id="btn-next" class="px-5 py-2 rounded-full bg-[#8c2121] text-white text-sm font-bold shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">下一步</button>
+        </div>
+    </footer>
+
+    <script>
+        // --- 基础字典数据 ---
+        const stems = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+        const branches = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+        const branchMap = { '子':0,'丑':1,'寅':2,'卯':3,'辰':4,'巳':5,'午':6,'未':7,'申':8,'酉':9,'戌':10,'亥':11 };
+        const stemMap = { '甲':0,'乙':1,'丙':2,'丁':3,'戊':4,'己':5,'庚':6,'辛':7,'壬':8,'癸':9 };
+        const elements = { '木': ['甲','乙','寅','卯'], '火': ['丙','丁','巳','午'], '土': ['戊','己','辰','戌','丑','未'], '金': ['庚','辛','申','酉'], '水': ['壬','癸','亥','子'] };
+        const parasitic = {'甲':'寅','乙':'辰','丙':'巳','丁':'未','戊':'巳','己':'未','庚':'申','辛':'戌','壬':'亥','癸':'丑'};
+        const deities = ['贵人','螣蛇','朱雀','六合','勾陈','青龙','天空','白虎','太常','玄武','太阴','天后'];
+        const guiRenRules = {
+            'day': {'甲':'丑','戊':'丑','庚':'丑','乙':'子','己':'子','丙':'亥','丁':'亥','壬':'巳','癸':'巳','辛':'午'},
+            'night': {'甲':'未','戊':'未','庚':'未','乙':'申','己':'申','丙':'酉','丁':'酉','壬':'卯','癸':'卯','辛':'寅'}
+        };
+        const yinYang = {
+            yang: ['甲','丙','戊','庚','壬','子','寅','辰','午','申','戌'],
+            yin: ['乙','丁','己','辛','癸','丑','卯','巳','未','酉','亥']
+        };
+
+        const getElement = (char) => Object.keys(elements).find(k => elements[k].includes(char));
+        const isYang = (char) => yinYang.yang.includes(char);
+
+        let currentBoard = null;
+        let stepTexts = [];
+        let currentStep = 1;
+
+        // --- 初始化UI ---
+        function initForm() {
+            const addOpts = (id, arr, defaultIdx) => {
+                const sel = document.getElementById(id);
+                arr.forEach((v, i) => { sel.appendChild(new Option(v, v, false, i === defaultIdx)); });
+            };
+            addOpts('sel-stem', stems, 0); 
+            addOpts('sel-branch', branches, 0); 
+            addOpts('sel-hour', branches, 3); 
+            addOpts('sel-general', branches, 10); 
+            renderEmptyBoard();
+        }
+
+        function renderEmptyBoard() {
+            const board = document.getElementById('main-board');
+            board.innerHTML = '';
+            const layoutOrder = [
+                {b:'巳', c:'cell-si'}, {b:'午', c:'cell-wu'}, {b:'未', c:'cell-wei'}, {b:'申', c:'cell-shen'},
+                {b:'辰', c:'cell-chen'}, {b:'酉', c:'cell-you'},
+                {b:'卯', c:'cell-mao'}, {b:'戌', c:'cell-xu'},
+                {b:'寅', c:'cell-yin'}, {b:'丑', c:'cell-chou'}, {b:'子', c:'cell-zi'}, {b:'亥', c:'cell-hai'}
+            ];
+            
+            layoutOrder.forEach(item => {
+                board.innerHTML += `
+                    <div class="cell ${item.c}" id="cell-${item.b}">
+                        <div class="top-row">
+                            <span class="deity-text" id="deity-${item.b}"></span>
+                            <div class="shensha-container" id="shensha-${item.b}"></div>
+                        </div>
+                        <div class="center-row">
+                            <span class="heaven-branch" id="heaven-${item.b}"></span>
+                        </div>
+                        <div class="bottom-row">
+                            <span class="six-kin-text" id="kin-${item.b}"></span>
+                            <span class="earth-branch">${item.b}</span>
+                        </div>
+                    </div>`;
+            });
+            board.innerHTML += `
+                <div class="cell-center">
+                    <svg width="35" height="35" viewBox="0 0 100 100" class="opacity-20 mb-1">
+                        <circle cx="50" cy="50" r="48" stroke="#8c2121" stroke-width="3" fill="none"/>
+                        <path d="M50 2 a48 48 0 0 1 0 96 a24 24 0 0 0 0 -48 a24 24 0 0 1 0 -48" fill="#8c2121" />
+                    </svg>
+                    <div class="text-[10px] sm:text-xs tracking-[0.2em] font-bold text-[#8c2121] opacity-60 mt-1">六壬盘</div>
+                </div>`;
+        }
+
+        // --- 核心推导引擎 (九宗门) ---
+        function calculateLiuRen(stem, branch, hour, general, daynight) {
+            const res = { stem, branch, hour, general, daynight };
+            
+            // 1. 天盘
+            const offset = (branchMap[general] - branchMap[hour] + 12) % 12;
+            res.heavenBoard = {};
+            branches.forEach((eb, i) => { res.heavenBoard[eb] = branches[(i + offset) % 12]; });
+
+            // 2. 四课
+            const k1_b = parasitic[stem], k1_t = res.heavenBoard[k1_b];
+            const k2_b = k1_t, k2_t = res.heavenBoard[k2_b];
+            const k3_b = branch, k3_t = res.heavenBoard[k3_b];
+            const k4_b = k3_t, k4_t = res.heavenBoard[k4_b];
+            res.lessons = [
+                { name: '第一课', bottom: stem, b_branch: k1_b, top: k1_t, idx: 0 },
+                { name: '第二课', bottom: k1_t, b_branch: k2_b, top: k2_t, idx: 1 },
+                { name: '第三课', bottom: branch, b_branch: k3_b, top: k3_t, idx: 2 },
+                { name: '第四课', bottom: k3_t, b_branch: k4_b, top: k4_t, idx: 3 }
+            ];
+
+            // 3. 九宗门推导 (贼克为主)
+            const checkKe = (t, b) => {
+                const te = getElement(t), be = getElement(b);
+                if ((be==='水'&&te==='火') || (be==='火'&&te==='金') || (be==='金'&&te==='木') || (be==='木'&&te==='土') || (be==='土'&&te==='水')) return {type: 'zei', text: '下贼上'};
+                if ((te==='水'&&be==='火') || (te==='火'&&be==='金') || (te==='金'&&be==='木') || (te==='木'&&be==='土') || (te==='土'&&be==='水')) return {type: 'ke', text: '上克下'};
+                return {type: 'none', text: '无克'};
+            };
+
+            let zeis = [], kes = [];
+            let clashLog = [];
+
+            res.lessons.forEach(l => {
+                let rel = checkKe(l.top, l.b_branch);
+                const elStr = `${getElement(l.top)}与${getElement(l.b_branch)}`;
+                if (rel.type === 'zei') { zeis.push(l); clashLog.push(`${l.name}(${l.top}/${l.bottom}) 为 ${elStr}，<span class="text-red-600 font-bold">下贼上</span>`); }
+                else if (rel.type === 'ke') { kes.push(l); clashLog.push(`${l.name}(${l.top}/${l.bottom}) 为 ${elStr}，<span class="text-blue-600 font-bold">上克下</span>`); }
+                else { clashLog.push(`${l.name}(${l.top}/${l.bottom}) 无相克`); }
+            });
+
+            res.clashLogText = clashLog.join('<br>');
+            
+            // 发用逻辑判定
+            let firstTrans = res.lessons[0].top;
+            let targetLessonIdx = 0;
+            let deductionMethod = "";
+            let deductionDetail = "";
+
+            if (offset === 0) {
+                // 伏吟
+                deductionMethod = "伏吟课";
+                firstTrans = res.lessons[0].top; targetLessonIdx = 0;
+                deductionDetail = "天地盘未动（伏吟），直接取干上神发用。";
+            } else if (offset === 6) {
+                // 返吟
+                deductionMethod = "返吟课";
+                // 简化处理，取冲
+                firstTrans = res.lessons[0].top; targetLessonIdx = 0;
+                deductionDetail = "天地盘对冲（返吟），取冲处发用。";
+            } else if (zeis.length === 1) {
+                // 重机
+                firstTrans = zeis[0].top; targetLessonIdx = zeis[0].idx; deductionMethod = "重机课";
+                deductionDetail = `四课中只有一课出现“下贼上”。<br>六壬尊卑分明，下克上为“贼”，最为紧要。故取<strong>${zeis[0].name}</strong>上神<strong>${firstTrans}</strong>发用。`;
+            } else if (zeis.length === 0 && kes.length === 1) {
+                // 元首
+                firstTrans = kes[0].top; targetLessonIdx = kes[0].idx; deductionMethod = "元首课";
+                deductionDetail = `四课中无“下贼上”，仅有一课“上克下”。<br>上克下为“克”，顺理成章，名为元首。故取<strong>${kes[0].name}</strong>上神<strong>${firstTrans}</strong>发用。`;
+            } else if (zeis.length > 1) {
+                // 比用 (多贼)
+                deductionMethod = "比用课(知一)";
+                const stemYang = isYang(stem);
+                let matched = zeis.find(z => isYang(z.top) === stemYang);
+                if(matched) {
+                    firstTrans = matched.top; targetLessonIdx = matched.idx;
+                    deductionDetail = `出现多个“下贼上”。<br>依据【比用】原则，日干${stem}为${stemYang?'阳':'阴'}，故在受贼的神中选取同为${stemYang?'阳':'阴'}的<strong>${firstTrans}</strong>（${matched.name}）发用。`;
+                } else {
+                    firstTrans = zeis[0].top; targetLessonIdx = zeis[0].idx; deductionMethod = "涉害课(简)";
+                    deductionDetail = `出现多个“下贼上”且阴阳俱不比和。进入【涉害】深度推导，取归根历位深者<strong>${firstTrans}</strong>发用。`;
+                }
+            } else if (zeis.length === 0 && kes.length > 1) {
+                // 比用 (多克)
+                deductionMethod = "比用课(知一)";
+                const stemYang = isYang(stem);
+                let matched = kes.find(k => isYang(k.top) === stemYang);
+                if(matched) {
+                    firstTrans = matched.top; targetLessonIdx = matched.idx;
+                    deductionDetail = `出现多个“上克下”。<br>依据【比用】原则，日干${stem}为${stemYang?'阳':'阴'}，取同为${stemYang?'阳':'阴'}的<strong>${firstTrans}</strong>（${matched.name}）发用。`;
+                } else {
+                    firstTrans = kes[0].top; targetLessonIdx = kes[0].idx; deductionMethod = "涉害课(简)";
+                    deductionDetail = `出现多克且无法比用，依法以涉害深浅定之，取<strong>${firstTrans}</strong>发用。`;
+                }
+            } else {
+                // 遥克 或 昴星等 (无克)
+                let yaoke = [];
+                for(let i=1; i<=3; i++) {
+                    const topEl = getElement(res.lessons[i].top);
+                    const stemEl = getElement(stem);
+                    if ((stemEl==='水'&&topEl==='火')||(stemEl==='火'&&topEl==='金')||(stemEl==='金'&&topEl==='木')||(stemEl==='木'&&topEl==='土')||(stemEl==='土'&&topEl==='水')) yaoke.push({l:res.lessons[i], type:'hao'}); // 干克神
+                    if ((topEl==='水'&&stemEl==='火')||(topEl==='火'&&stemEl==='金')||(topEl==='金'&&stemEl==='木')||(topEl==='木'&&stemEl==='土')||(topEl==='土'&&stemEl==='水')) yaoke.push({l:res.lessons[i], type:'shen'}); // 神克干
+                }
+                if (yaoke.length > 0) {
+                    deductionMethod = "遥克课";
+                    firstTrans = yaoke[0].l.top; targetLessonIdx = yaoke[0].l.idx;
+                    deductionDetail = `四课上下皆无克。寻日干与第二、三、四课上神之克。<br>优先取“神克干”（射害），次取“干克神”（弹射）。故取<strong>${firstTrans}</strong>发用。`;
+                } else {
+                    deductionMethod = "昴星/别责(简)";
+                    firstTrans = res.lessons[0].top; targetLessonIdx = 0;
+                    deductionDetail = `四课全无生克。依据日干阴阳分别查地盘酉宫或取合干发用。为演示连贯，此处取刚柔相济之神<strong>${firstTrans}</strong>。`;
+                }
+            }
+
+            res.transMethod = deductionMethod;
+            res.targetLessonIdx = targetLessonIdx; // 0,1,2,3
+            res.deductionDetail = deductionDetail;
+            
+            // 中传、末传
+            res.transmissions = [firstTrans, res.heavenBoard[firstTrans], res.heavenBoard[res.heavenBoard[firstTrans]]];
+
+            // 4. 天将贵神
+            const startBranch = guiRenRules[daynight][stem];
+            const guiRenEarth = Object.keys(res.heavenBoard).find(k => res.heavenBoard[k] === startBranch);
+            const forward = ['亥','子','丑','寅','卯','辰'].includes(guiRenEarth);
+            res.deitiesMap = {};
+            const eIdx = branchMap[guiRenEarth];
+            for(let i=0; i<12; i++) { res.deitiesMap[branches[(eIdx + (forward ? i : -i) + 12) % 12]] = deities[i]; }
+            res.deityForward = forward;
+
+            // 5. 六亲神煞
+            res.sixKins = {};
+            const se = getElement(stem);
+            branches.forEach(b => {
+                const be = getElement(b);
+                if(se === be) res.sixKins[b] = "兄弟";
+                else if ((se==='木'&&be==='火')||(se==='火'&&be==='土')||(se==='土'&&be==='金')||(se==='金'&&be==='水')||(se==='水'&&be==='木')) res.sixKins[b] = "子孙";
+                else if ((be==='木'&&se==='火')||(be==='火'&&se==='土')||(be==='土'&&se==='金')||(be==='金'&&se==='水')||(be==='水'&&se==='木')) res.sixKins[b] = "父母";
+                else if ((se==='木'&&be==='土')||(se==='火'&&be==='金')||(se==='土'&&be==='水')||(se==='金'&&be==='木')||(se==='水'&&be==='火')) res.sixKins[b] = "妻财";
+                else res.sixKins[b] = "官鬼";
+            });
+
+            res.shenSha = {};
+            branches.forEach(b => res.shenSha[b] = []);
+            const voidStart = (branchMap[branch] - stemMap[stem] + 10) % 12;
+            res.shenSha[branches[voidStart]].push("空亡");
+            res.shenSha[branches[(voidStart+1)%12]].push("空亡");
+            const maMap = {'子':'寅','丑':'亥','寅':'申','卯':'巳','辰':'寅','巳':'亥','午':'申','未':'巳','申':'寅','酉':'亥','戌':'申','亥':'巳'};
+            res.shenSha[maMap[branch]].push("驿马");
+
+            return res;
+        }
+
+        function populateDOMData(board) {
+            branches.forEach(eb => {
+                document.getElementById(`heaven-${eb}`).innerText = board.heavenBoard[eb];
+                document.getElementById(`deity-${eb}`).innerText = board.deitiesMap[eb];
+                document.getElementById(`kin-${eb}`).innerText = board.sixKins[board.heavenBoard[eb]];
+                document.getElementById(`shensha-${eb}`).innerHTML = board.shenSha[eb].map(s => `<span class="shensha-text">${s}</span>`).join('');
+            });
+
+            // 四课按照传统从右向左排列：第四课, 第三课, 第二课, 第一课
+            document.getElementById('four-classes').innerHTML = [3, 2, 1, 0].map(i => {
+                const l = board.lessons[i];
+                const eb = Object.keys(board.heavenBoard).find(k => board.heavenBoard[k] === l.top);
+                return `
+                <div class="class-col" id="class-col-${i}">
+                    <div class="class-deity">${board.deitiesMap[eb]}</div>
+                    <div class="class-top">${l.top}</div>
+                    <div class="class-bottom">${l.bottom}</div>
+                    <div class="class-label">第${['一','二','三','四'][i]}课</div>
+                </div>`;
+            }).join('');
+
+            // 三传按传统垂直排列
+            document.getElementById('three-trans').innerHTML = board.transmissions.map((t, i) => {
+                const eb = Object.keys(board.heavenBoard).find(k => board.heavenBoard[k] === t);
+                return `
+                <div class="trans-card" id="trans-card-${i}">
+                    <div class="trans-left">
+                        <span class="trans-label">${['初传','中传','末传'][i]}</span>
+                        <span class="trans-value">${t}</span>
+                    </div>
+                    <div class="trans-meta">
+                        <span class="t-deity">${board.deitiesMap[eb]}</span>
+                        <span class="t-kin">${board.sixKins[t]}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function prepareStepTexts(board) {
+            stepTexts = [
+                {
+                    title: "一、确立地盘基础 (定静体)",
+                    desc: `<p><strong>本局参数：</strong><span class="text-[#8c2121] font-bold">${board.stem}${board.branch}日，${board.hour}时，${board.general}将 (${board.daynight==='day'?'昼':'夜'})</span>。</p>
+                           <p><strong>详解释疑：</strong>当前展示的是<strong>地盘</strong>（盘面各宫位右下角灰色字）。地盘十二宫代表十二个<strong>绝对静止的空间方位</strong>（如子在正北，午在正南）。它是整个六壬式盘的“地基”，象征着大地的方位和事物不变的本质法则。</p>`
+                },
+                {
+                    title: "二、月将加占时排天盘 (察动用)",
+                    desc: `<p><strong>排盘口诀：</strong>“月将加占时”。</p>
+                           <p><strong>详解释疑：</strong><strong>月将</strong>（本局为${board.general}）代表太阳当下在宇宙中的位置，是天上最核心的能量源。<strong>占时</strong>（本局为${board.hour}）代表求测人问事的具体时辰。将“太阳”叠放在“问事空间”上，然后顺时针旋转布满十二宫，就形成了<strong>天盘</strong>（盘面中心红色大字）。</p>
+                           <p>这模拟了天体在这一刻的运转规律，体现了“天道左旋”的动态干涉力量。</p>`
+                },
+                {
+                    title: "三、演列四课 (立主客)",
+                    desc: `<p><strong>四课含义：</strong>四课是天地盘能量的浓缩，代表事物的<strong>主客、内外、动静</strong>关系。日干代表求测者自己（主/内），日支代表所测之事或他人（客/外）。传统从右至左排列：</p>
+                           <ul class="list-disc list-inside mt-1 space-y-1 text-sm text-gray-700">
+                               <li><strong>第一课(日上)：</strong>代表求测者自身当下的外在处境。</li>
+                               <li><strong>第二课(日阴)：</strong>由第一课衍生，代表求测者的内部隐藏因素或背后的推手。</li>
+                               <li><strong>第三课(辰上)：</strong>代表对方、客体或所测之事的表象。</li>
+                               <li><strong>第四课(辰阴)：</strong>代表对方的内部隐藏因素或事情的深层隐患。</li>
+                           </ul>`
+                },
+                {
+                    title: "四、核心：九宗门发用 (寻机微)",
+                    desc: `<p><strong>九宗法则：</strong>四课齐备后，事物处于胶着状态。何处发生“五行生克”，何处就是矛盾爆发的起点（发用/初传）。</p>
+                           <div class="bg-gray-100 p-2 text-xs rounded mt-2 mb-2 shadow-inner leading-relaxed border border-gray-200">${board.clashLogText}</div>
+                           <p><strong>推导详情：</strong>系统判定本局属于<strong class="text-[#8c2121] bg-yellow-100 px-1 rounded">${board.transMethod}</strong>。</p>
+                           <p class="mt-1">${board.deductionDetail}</p>`
+                },
+                {
+                    title: "五、排布三传 (判始末)",
+                    desc: `<p><strong>三传结构：</strong>三传是事物发展的完整时间线。盘面下方按传统由上至下排布：</p>
+                           <ul class="list-disc list-inside mt-1 space-y-1 text-sm text-gray-700">
+                               <li><strong>初传（发用）：</strong>${board.transmissions[0]}。代表事情的起因、动机和爆发点。</li>
+                               <li><strong>中传：</strong>${board.transmissions[1]} (初传${board.transmissions[0]}落在地盘的宫位上的天盘神)。代表事情的发展过程和转折。</li>
+                               <li><strong>末传：</strong>${board.transmissions[2]} (中传${board.transmissions[1]}落在地盘的宫位上的天盘神)。代表事情的最终结局和归宿。</li>
+                           </ul>`
+                },
+                {
+                    title: "六、布十二贵神 (观天意)",
+                    desc: `<p><strong>排布口诀：</strong>依据日干定贵人。本局为${board.stem}日${board.daynight==='day'?'昼':'夜'}将，天乙贵人落宫，依“天罡决”判定为<strong>${board.deityForward?'顺':'逆'}行</strong>。</p>
+                           <p><strong>详解释疑：</strong>请看各宫左上角的<span class="text-[#2b4c6f] font-bold">蓝色字</span>。十二天将（如青龙主财，白虎主灾，六合主合）如同钦差大臣，代表老天赋予的特定“神态”和“外在助力”，极大地影响吉凶性质。</p>`
+                },
+                {
+                    title: "七、遁六亲与神煞 (定吉凶)",
+                    desc: `<p><strong>最终断事要素：</strong></p>
+                           <ul class="list-disc list-inside mt-1 space-y-1 text-sm text-gray-700">
+                               <li><strong>六亲(左下灰字)：</strong>以日干${board.stem}为“我”定出：生我者父母(庇护)，克我者官鬼(灾祸/权力)，我克者妻财(财物)，我生者子孙(平安/消耗)，同我者兄弟(竞争)。</li>
+                               <li><strong>神煞(右上红字)：</strong>叠加特殊能量。如“空亡”代表虚无、落空；“驿马”代表奔波、出行。</li>
+                           </ul>
+                           <p class="mt-2 text-[#8c2121] font-bold text-center">排盘完毕！全息信息已显现，吉凶由此可断。</p>`
+                }
+            ];
+        }
+
+        function applyBoardState(step) {
+            document.querySelectorAll('.highlight-cell').forEach(el => el.classList.remove('highlight-cell'));
+            document.querySelectorAll('.pulse-text').forEach(el => el.classList.remove('pulse-text'));
+            document.querySelectorAll('.class-col').forEach(el => el.classList.remove('highlight-lesson'));
+
+            // 1步：地盘
+            document.querySelectorAll('.earth-branch').forEach(el => el.style.opacity = step >= 1 ? '1' : '0');
+            // 2步：天盘
+            document.querySelectorAll('.heaven-branch').forEach(el => {
+                el.style.opacity = step >= 2 ? '1' : '0';
+                el.style.transform = step >= 2 ? 'scale(1)' : 'scale(0.5)';
+            });
+            if(step === 2) {
+                document.getElementById(`cell-${currentBoard.hour}`).classList.add('highlight-cell');
+                document.getElementById(`heaven-${currentBoard.hour}`).classList.add('pulse-text');
+            }
+            // 3步：四课
+            document.getElementById('four-classes').style.opacity = step >= 3 ? '1' : '0';
+            
+            // 4步：九宗门发用高亮
+            if (step === 4) {
+                const targetCol = document.getElementById(`class-col-${currentBoard.targetLessonIdx}`);
+                if(targetCol) targetCol.classList.add('highlight-lesson');
+            }
+
+            // 5步：三传
+            document.getElementById('three-trans').style.opacity = step >= 5 ? '1' : '0';
+            document.querySelectorAll('.trans-card').forEach((el, idx) => {
+                if (step >= 5) {
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, idx * 300); // 瀑布流出现
+                } else {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(10px)';
+                }
+            });
+
+            // 6步：天将
+            document.querySelectorAll('.deity-text, .class-deity, .t-deity').forEach(el => el.style.opacity = step >= 6 ? '1' : '0');
+            // 7步：六亲神煞
+            document.querySelectorAll('.six-kin-text, .shensha-container, .t-kin').forEach(el => el.style.opacity = step >= 7 ? '1' : '0');
+        }
+
+        function updateUI() {
+            const data = stepTexts[currentStep - 1];
+            document.getElementById('step-title').innerText = data.title;
+            const desc = document.getElementById('step-desc');
+            desc.style.opacity = 0;
+            setTimeout(() => {
+                desc.innerHTML = data.desc;
+                desc.style.opacity = 1;
+            }, 200);
+
+            document.getElementById('step-counter').innerText = currentStep;
+
+            document.getElementById('btn-prev').disabled = currentStep === 1;
+            const btnNext = document.getElementById('btn-next');
+            if (currentStep === 7) {
+                btnNext.innerText = "已完成";
+                btnNext.disabled = true;
+                btnNext.classList.replace('bg-[#8c2121]', 'bg-gray-400');
+            } else {
+                btnNext.innerText = "下一步";
+                btnNext.disabled = false;
+                btnNext.classList.replace('bg-gray-400', 'bg-[#8c2121]');
+            }
+
+            applyBoardState(currentStep);
+
+            if(currentStep === 3 || currentStep === 4) document.getElementById('four-classes').scrollIntoView({behavior: 'smooth', block: 'start'});
+            if(currentStep === 5) document.getElementById('three-trans').scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+
+        document.getElementById('btn-generate').addEventListener('click', () => {
+            const stem = document.getElementById('sel-stem').value;
+            const branch = document.getElementById('sel-branch').value;
+            const hour = document.getElementById('sel-hour').value;
+            const general = document.getElementById('sel-general').value;
+            const daynight = document.getElementById('sel-daynight').value;
+
+            currentBoard = calculateLiuRen(stem, branch, hour, general, daynight);
+            populateDOMData(currentBoard);
+            prepareStepTexts(currentBoard);
+            currentStep = 1;
+
+            document.getElementById('setup-panel').classList.add('hidden');
+            document.getElementById('btn-toggle-setup').classList.remove('hidden');
+            document.getElementById('board-container').classList.replace('hidden', 'flex');
+            document.getElementById('teaching-controller').classList.replace('hidden', 'flex');
+            
+            updateUI();
+        });
+
+        document.getElementById('btn-toggle-setup').addEventListener('click', () => {
+            document.getElementById('setup-panel').classList.remove('hidden');
+            document.getElementById('btn-toggle-setup').classList.add('hidden');
+            document.getElementById('board-container').classList.replace('flex', 'hidden');
+            document.getElementById('teaching-controller').classList.replace('flex', 'hidden');
+        });
+
+        document.getElementById('btn-next').addEventListener('click', () => { if(currentStep < 7){ currentStep++; updateUI(); }});
+        document.getElementById('btn-prev').addEventListener('click', () => { if(currentStep > 1){ currentStep--; updateUI(); }});
+
+        window.onload = initForm;
+    </script>
+</body>
+</html>
